@@ -22,23 +22,28 @@ CHUNKSIZE = 50_000
 
 
 def load_config():
-    config_path = Path(__file__).parent.parent / "config.json"
+    config_path = Path(__file__).parent.parent.parent / "config.json"
     with open(config_path) as f:
         return json.load(f)
 
 
 def collect_columns(config: dict) -> dict[str, set[str]]:
-    """Return {dataset: {columns}} needed, including harmonize sources."""
+    """Return {dataset: {columns}} needed, including harmonize and derived sources."""
+    harmonized_names = {h["name"] for h in config.get("harmonize", [])}
     by_dataset: dict[str, set[str]] = {}
     for panel in config["variables"].values():
         for vdef in panel:
-            # Skip harmonized variables — they are computed, not read from CSV
-            if any(h["name"] == vdef["name"] for h in config.get("harmonize", [])):
+            if vdef["dataset"] == "derived":
+                continue
+            if vdef["name"] in harmonized_names:
                 continue
             by_dataset.setdefault(vdef["dataset"], set()).add(vdef["name"])
     for hdef in config.get("harmonize", []):
         for src in hdef["sources"]:
             by_dataset.setdefault(hdef["dataset"], set()).add(src["variable"])
+    for ddef in config.get("derived", []):
+        for src in ddef.get("source_vars", []):
+            by_dataset.setdefault(src["dataset"], set()).add(src["name"])
     return by_dataset
 
 

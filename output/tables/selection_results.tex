@@ -1,0 +1,46 @@
+\begin{table}[htbp]
+\centering
+\caption{Selection into Remote Work (Linear Probability Model)}
+\label{tab:selection_results}
+\resizebox{0.8\textwidth}{!}{%
+\begin{tabular}{lcc}
+\toprule
+ & \multicolumn{2}{c}{\textbf{Dependent variable:}} \\ \cline{2-3}
+ & \multicolumn{2}{c}{\textit{Possibility to work from home (1/0)}} \\
+ \textbf{Predictor} & \textbf{Coeff. (Beta)} & \textbf{(Std. Err.)} \\
+\midrule
+\multicolumn{3}{l}{\textbf{Main Trend}} \\
+\midrule
+Post-COVID (2021-22) & 0.085*** & (0.030) \\
+\multicolumn{3}{l}{\textbf{Socioeconomic Determinants}} \\
+\midrule
+Age$^\dagger$ & -0.003*** & (0.000) \\
+Gender & 0.012 & (0.010) \\
+Migration Background & -0.042*** & (0.011) \\
+Education$^\dagger$ & 0.034*** & (0.004) \\
+Children$^\dagger$ & -0.025*** & (0.005) \\
+Log Household Income$^\dagger$ & 0.083*** & (0.010) \\
+\multicolumn{3}{l}{\textbf{Work \& Health Determinants}} \\
+\midrule
+Satisfaction with work$^\dagger$ & -0.021*** & (0.002) \\
+Labor Force Status & -0.029 & (0.019) \\
+Annual work hours & 0.000** & (0.000) \\
+Works overtime & 0.086*** & (0.009) \\
+\multicolumn{3}{l}{\textbf{Shifting Determinants (Interactions)}} \\
+\midrule
+Gender x Post-COVID & -0.041*** & (0.015) \\
+Mig. Background x Post-COVID & 0.038*** & (0.014) \\
+Log Income$^\dagger$ x Post-COVID & -0.073*** & (0.011) \\
+Education$^\dagger$ x Post-COVID & 0.012** & (0.005) \\
+Children$^\dagger$ x Post-COVID & 0.019** & (0.008) \\
+\midrule
+Observations & \multicolumn{2}{c}{18,942} \\
+R-squared & \multicolumn{2}{c}{0.054} \\
+\bottomrule
+\multicolumn{3}{l}{\small Standard errors clustered by household in parentheses} \\
+\multicolumn{3}{l}{\small Constant term included in model but not shown.} \\
+\multicolumn{3}{l}{\small $^\dagger$ Continuous variables are centered around their sample means.} \\
+\multicolumn{3}{l}{\small *** $p<0.01$, ** $p<0.05$, * $p<0.1$} \\
+\end{tabular}
+}
+\end{table}
