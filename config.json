@@ -1,0 +1,32 @@
+{
+  "data": {
+    "soep_dir": "/home/alexer/Data/SOEP-Core/CSV/soepdata",
+    "raw_dir": "/home/alexer/Data/SOEP-Core/CSV/soepdata/raw",
+    "eu_silc_dir": "/home/alexer/Data/SOEP-Core/CSV/soepdata/eu-silc-like-panel",
+    "key_files": {
+      "pl": "pl.csv",
+      "pgen": "pgen.csv",
+      "ppathl": "ppathl.csv",
+      "hgen": "hgen.csv",
+      "hl": "hl.csv",
+      "pequiv": "pequiv.csv",
+      "pkal": "pkal.csv",
+      "health": "health.csv",
+      "regionl": "regionl.csv"
+    }
+  },
+  "output": {
+    "figures_dir": "output/figures",
+    "tables_dir": "output/tables",
+    "data_dir": "output/data"
+  },
+  "study": {
+    "topic": "Life satisfaction in Germany and remote work during COVID-19",
+    "years_of_interest": [2018, 2019, 2020, 2021, 2022],
+    "covid_onset_year": 2020,
+    "outcome_variable": "life_satisfaction",
+    "soep_outcome_var": "p11101",
+    "soep_outcome_dataset": "pequiv",
+    "treatment_variable": "remote_work"
+  }
+}
