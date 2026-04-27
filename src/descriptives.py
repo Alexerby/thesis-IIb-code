@@ -86,11 +86,10 @@ PANEL_ORDER = ["outcome_primary", "outcome_secondary", "treatment", "mechanisms"
 
 
 def build_latex(all_stats: dict, var_meta: dict, years: list[int] | None, harmonized: set[str]) -> str:
-    year_cols = sorted(
-        {yr for stats in all_stats.values() for yr in stats["n_by_year"]}
-    )
     if years:
-        year_cols = [y for y in year_cols if y in years]
+        year_cols = sorted(years)
+    else:
+        year_cols = sorted({yr for stats in all_stats.values() for yr in stats["n_by_year"]})
 
     col_spec = "llr" + "r" * len(year_cols) + "rrrrr"
     year_header = " & ".join(str(y) for y in year_cols)

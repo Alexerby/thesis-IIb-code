@@ -29,21 +29,7 @@
     "soep_outcome_dataset": "pequiv",
     "treatment_variable": "remote_work"
   },
-  "harmonize": [
-    {
-      "name": "plb0095_h",
-      "dataset": "pl",
-      "label": "Works from home (any)",
-      "note": "1 = works from home (fully or partly), 0 = does not. v1/v2 recoded from Yes/No; v3--v5 recoded from Entirely/Partly/No.",
-      "sources": [
-        {"variable": "plb0095_v1", "recode": {"1": 1, "2": 0}},
-        {"variable": "plb0095_v2", "recode": {"1": 1, "2": 0}},
-        {"variable": "plb0095_v3", "recode": {"1": 1, "2": 1, "3": 0}},
-        {"variable": "plb0095_v4", "recode": {"1": 1, "2": 1, "3": 0}},
-        {"variable": "plb0095_v5", "recode": {"1": 1, "2": 1, "3": 0}}
-      ]
-    }
-  ],
+  "harmonize": [],
   "variables": {
     "outcome_primary": [
       {"name": "p11101",    "dataset": "pequiv", "label": "Overall life satisfaction",        "scale": "0--10"}
@@ -55,8 +41,7 @@
       {"name": "plh0181",   "dataset": "pl",     "label": "Satisfaction with social life",    "scale": "0--10"}
     ],
     "treatment": [
-      {"name": "plb0095_h", "dataset": "pl",     "label": "Works from home",                  "scale": "0/1"},
-      {"name": "plb0097",   "dataset": "pl",     "label": "Possibility to work from home",    "scale": "binary"}
+      {"name": "plb0097",   "dataset": "pl",     "label": "Possibility to work from home",    "scale": "1--3"}
     ],
     "mechanisms": [
       {"name": "plb0147",   "dataset": "pl",     "label": "Commute time (hours)",             "scale": "hours"},
