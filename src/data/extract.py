@@ -1,31 +1,17 @@
 """
 One-time extraction: reads large SOEP CSVs in chunks and writes slim Parquet
 files containing only the variables defined in config.json.
-
-Run this once before any analysis:
-    python src/extract.py
-
-Parquet files are written to output/data/<dataset>.parquet.
-Subsequent scripts read from there — no more loading 13 GB CSVs.
-Re-run (after deleting the parquet) whenever config.json variables change.
 """
 
-import json
 from pathlib import Path
-
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-SOEP_MISSING = {-8, -7, -6, -5, -4, -3, -2, -1}
+from src.data.io import load_config
+from src.data.utils import SOEP_MISSING
+
 CHUNKSIZE = 50_000
-
-
-def load_config():
-    config_path = Path(__file__).parent.parent.parent / "config.json"
-    with open(config_path) as f:
-        return json.load(f)
-
 
 def collect_columns(config: dict) -> dict[str, set[str]]:
     """Return {dataset: {columns}} needed, including harmonize and derived sources."""
@@ -46,7 +32,6 @@ def collect_columns(config: dict) -> dict[str, set[str]]:
             by_dataset.setdefault(src["dataset"], set()).add(src["name"])
     return by_dataset
 
-
 def apply_harmonize(df: pd.DataFrame, harmonize: list[dict], dataset: str) -> pd.DataFrame:
     """Compute harmonized columns in-place and return the dataframe."""
     for hdef in harmonize:
@@ -64,7 +49,6 @@ def apply_harmonize(df: pd.DataFrame, harmonize: list[dict], dataset: str) -> pd
         df[name] = result
         print(f"    harmonized {name} from {[s['variable'] for s in hdef['sources']]}")
     return df
-
 
 def extract(soep_dir: str, dataset: str, columns: set[str], harmonize: list[dict], out_path: Path):
     csv_path = Path(soep_dir) / f"{dataset}.csv"
@@ -91,7 +75,6 @@ def extract(soep_dir: str, dataset: str, columns: set[str], harmonize: list[dict
     df = pd.concat(chunks, ignore_index=True)
     df = apply_harmonize(df, harmonize, dataset)
 
-    # Drop raw source columns that only exist to serve harmonization
     harmonize_sources = {
         s["variable"].lower()
         for h in harmonize if h["dataset"] == dataset
@@ -104,7 +87,6 @@ def extract(soep_dir: str, dataset: str, columns: set[str], harmonize: list[dict
     table = pa.Table.from_pandas(df, preserve_index=False)
     pq.write_table(table, out_path)
     print(f"    done.")
-
 
 def main():
     config = load_config()
@@ -119,12 +101,9 @@ def main():
     for dataset, columns in by_dataset.items():
         out_path = out_dir / f"{dataset}.parquet"
         if out_path.exists():
-            print(f"  {out_path.name} already exists — skipping (delete to re-extract)")
+            print(f"  {out_path.name} already exists — skipping")
             continue
         extract(soep_dir, dataset, columns, harmonize, out_path)
-
-    print("\nDone. Run descriptives.py now.")
-
 
 if __name__ == "__main__":
     main()

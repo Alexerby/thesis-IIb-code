@@ -3,18 +3,12 @@ Generate LaTeX descriptive statistics tables for study variables.
 Outputs a main comparison table and a detailed appendix table.
 """
 
-import argparse
-import json
 from pathlib import Path
 import pandas as pd
 import numpy as np
 
-SOEP_MISSING = {-8, -7, -6, -5, -4, -3, -2, -1}
-
-def load_config():
-    config_path = Path(__file__).parent.parent.parent / "config.json"
-    with open(config_path) as f:
-        return json.load(f)
+from src.data.io import load_config
+from src.data.utils import clean_series
 
 MASTER_PATH = Path("output/data/master.parquet")
 
@@ -23,37 +17,43 @@ def load_master() -> pd.DataFrame:
         raise FileNotFoundError(f"{MASTER_PATH} not found — run build_dataframe.py first")
     return pd.read_parquet(MASTER_PATH)
 
-def clean(series: pd.Series) -> pd.Series:
-    s = pd.to_numeric(series, errors="coerce")
-    return s[~s.isin(SOEP_MISSING)]
-
-def compute_stats(df: pd.DataFrame, varname: str, pre_years: list[int], post_years: list[int]) -> dict:
-    # Full Sample
-    s_all = clean(df[varname])
+def compute_stats(df: pd.DataFrame, varname: str, pre_years: list[int], post_years: list[int], vtype: str) -> dict:
+    s_all = clean_series(df[varname])
+    s_pre = clean_series(df[df["syear"].isin(pre_years)][varname])
+    s_post = clean_series(df[df["syear"].isin(post_years)][varname])
     
-    # Pre-COVID
-    s_pre = clean(df[df["syear"].isin(pre_years)][varname])
-    
-    # Post-COVID
-    s_post = clean(df[df["syear"].isin(post_years)][varname])
-    
-    # Yearly N for Appendix
     by_year = {}
     for yr, grp in df.groupby("syear"):
-        s_yr = clean(grp[varname])
+        s_yr = clean_series(grp[varname])
         if not s_yr.empty:
             by_year[int(yr)] = int(s_yr.count())
             
-    return {
+    res = {
         "full": {"n": int(s_all.count()), "mean": s_all.mean(), "sd": s_all.std(), "min": s_all.min(), "max": s_all.max()},
         "pre":  {"n": int(s_pre.count()), "mean": s_pre.mean(), "sd": s_pre.std()},
         "post": {"n": int(s_post.count()), "mean": s_post.mean(), "sd": s_post.std()},
         "n_by_year": by_year,
     }
 
+    if vtype == "categorical":
+        all_cats = sorted(s_all.unique())
+        if len(all_cats) <= 5:
+            def get_dist_str(s):
+                if s.empty: return "--"
+                c = s.value_counts(normalize=True).reindex(all_cats, fill_value=0)
+                return " / ".join([f"{v*100:.1f}" for v in c])
+            
+            res["full"]["dist"] = get_dist_str(s_all)
+            res["pre"]["dist"] = get_dist_str(s_pre)
+            res["post"]["dist"] = get_dist_str(s_post)
+        else:
+            res["full"]["dist"] = "Dist. (>5)"
+            res["pre"]["dist"] = "--"
+            res["post"]["dist"] = "--"
+    return res
+
 def build_main_table(all_stats: dict, var_meta: dict, panels: list[dict], harmonized: set[str]) -> str:
-    """Builds a table comparing Pre and Post COVID means/SDs."""
-    col_spec = "ll l rr rr r" # Var, Desc, Scale, Pre(M/SD), Post(M/SD), N_Total
+    col_spec = "ll l rr rr r"
     lines = [
         r"\begin{table}[htbp]",
         r"\centering",
@@ -79,12 +79,18 @@ def build_main_table(all_stats: dict, var_meta: dict, panels: list[dict], harmon
             if not s or s["full"]["n"] == 0: continue
             
             scale = vdef.get("scale", "")
+            vtype = vdef.get("type", "continuous").lower()
             tex_name = name.replace("_", r"\_")
             dagger = r"$^\dagger$" if name in harmonized else ""
             
-            if scale.upper() == "ID":
+            if vtype == "id":
                 pre_cells = "-- & --"
                 post_cells = "-- & --"
+            elif vtype == "categorical":
+                dist_pre = s["pre"].get("dist", "--")
+                dist_post = s["post"].get("dist", "--")
+                pre_cells = rf"\small {dist_pre} & --"
+                post_cells = rf"\small {dist_post} & --"
             else:
                 pre_cells = f"{s['pre']['mean']:.2f} & {s['pre']['sd']:.2f}"
                 post_cells = f"{s['post']['mean']:.2f} & {s['post']['sd']:.2f}"
@@ -95,11 +101,27 @@ def build_main_table(all_stats: dict, var_meta: dict, panels: list[dict], harmon
             )
         lines.append(r"\addlinespace")
 
-    lines += [r"\bottomrule", r"\end{tabular}%", r"}", r"\end{table}"]
+    notes = [
+        r"For categorical variables with $\le 5$ categories, the 'Mean' column shows the percentage distribution (e.g., Cat 1 / Cat 2 / ...).",
+    ]
+    if harmonized:
+        notes.append(r"$^\dagger$Manually harmonized from multiple survey versions.")
+    
+    formatted_notes = "\n".join([rf"\small Note {i+1}: {text} \\\\" for i, text in enumerate(notes)])
+
+    lines += [
+        r"\bottomrule", 
+        r"\end{tabular}%", 
+        r"}",
+        r"\smallskip",
+        r"\parbox{\linewidth}{",
+        formatted_notes,
+        r"}",
+        r"\end{table}"
+    ]
     return "\n".join(lines)
 
 def build_appendix_table(all_stats: dict, var_meta: dict, panels: list[dict], years: list[int]) -> str:
-    """The original detailed table with yearly N and full descriptives."""
     year_cols = sorted(years)
     col_spec = "llr" + "r" * len(year_cols) + "rrrrr"
     year_header = " & ".join(str(y) for y in year_cols)
@@ -128,17 +150,30 @@ def build_appendix_table(all_stats: dict, var_meta: dict, panels: list[dict], ye
             
             n_cells = " & ".join(f"{s['n_by_year'].get(y, 0):,}" for y in year_cols)
             scale = vdef.get("scale", "")
+            vtype = vdef.get("type", "continuous").lower()
             tex_name = name.replace("_", r"\_")
             
-            if scale.upper() == "ID":
+            if vtype == "id":
                 stats_cells = "& -- & -- & -- & --"
+            elif vtype == "categorical":
+                dist_full = s["full"].get("dist", "--")
+                stats_cells = rf"& \small {dist_full} & -- & -- & --"
             else:
                 stats_cells = rf"& {s['full']['mean']:.3f} & {s['full']['sd']:.3f} & {s['full']['min']:.0f} & {s['full']['max']:.0f}"
 
             lines.append(rf"\texttt{{{tex_name}}} & {vdef['label']} & {scale} & {n_cells} & {s['full']['n']:,} {stats_cells} \\")
         lines.append(r"\addlinespace")
 
-    lines += [r"\bottomrule", r"\end{tabular}%", r"}", r"\end{table}"]
+    lines += [
+        r"\bottomrule", 
+        r"\end{tabular}%", 
+        r"}",
+        r"\smallskip",
+        r"\parbox{\linewidth}{",
+        r"\small Note 1: For categorical variables with $\le 5$ categories, the 'Mean' column shows the percentage distribution. \\",
+        r"}",
+        r"\end{table}"
+    ]
     return "\n".join(lines)
 
 def main():
@@ -155,24 +190,19 @@ def main():
     for panel in var_meta.values():
         for vdef in panel:
             name = vdef["name"]
+            vtype = vdef.get("type", "continuous").lower()
             if name.lower() not in master.columns: continue
-            all_stats[name] = compute_stats(master, name.lower(), pre_years, post_years)
+            all_stats[name] = compute_stats(master, name.lower(), pre_years, post_years, vtype)
 
     harmonized = {h["name"] for h in config.get("harmonize", [])}
     panels = config.get("panels", [])
 
-    # Generate Main Table
     main_tex = build_main_table(all_stats, var_meta, panels, harmonized)
-    main_path = Path("output/tables/descriptives_main.tex")
-    main_path.parent.mkdir(parents=True, exist_ok=True)
-    main_path.write_text(main_tex)
-    print(f"Wrote {main_path}")
-
-    # Generate Appendix Table
+    Path("output/tables/descriptives_main.tex").write_text(main_tex)
+    
     app_tex = build_appendix_table(all_stats, var_meta, panels, all_study_years)
-    app_path = Path("output/tables/descriptives_appendix.tex")
-    app_path.write_text(app_tex)
-    print(f"Wrote {app_path}")
+    Path("output/tables/descriptives_appendix.tex").write_text(app_tex)
+    print("Descriptive tables generated.")
 
 if __name__ == "__main__":
     main()

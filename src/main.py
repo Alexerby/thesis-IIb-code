@@ -11,9 +11,13 @@ from pathlib import Path
 
 def run_script(script_path: str, args: list[str] = None):
     """Utility to run a sub-script and handle errors."""
+    import os
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(Path(__file__).parent.parent)
+
     cmd = [sys.executable, script_path] + (args or [])
     print(f"\n>>> Running: {' '.join(cmd)}")
-    result = subprocess.run(cmd)
+    result = subprocess.run(cmd, env=env)
     if result.returncode != 0:
         print(f"ERROR: {script_path} failed with exit code {result.returncode}")
         sys.exit(result.returncode)
@@ -47,7 +51,7 @@ def main():
             run_script(str(data_dir / "extract.py"))
 
     # 2. Build Master Dataframe
-    run_script(str(data_dir / "build_dataframe.py"))
+    run_script(str(src_dir / "build_dataframe.py"))
 
     # 3. Generate Descriptive Statistics
     run_script(str(data_dir / "descriptives.py"))

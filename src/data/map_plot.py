@@ -115,7 +115,7 @@ def main():
     # Add shared colorbar
     sm = plt.cm.ScalarMappable(cmap='Greys', norm=plt.Normalize(vmin=vmin, vmax=vmax))
     cbar = fig.colorbar(sm, ax=[ax1, ax2], orientation='horizontal', pad=0.1, shrink=0.6)
-    cbar.set_label("Remote Work Possibility (Share of Remote-Capable Jobs, %)", fontsize=10)
+    cbar.set_label("Willingness to Work Remotely (Share of 'Yes' among Remote-Capable Jobs, %)", fontsize=10)
 
     figures_dir = Path(config["output"]["figures_dir"])
     figures_dir.mkdir(parents=True, exist_ok=True)

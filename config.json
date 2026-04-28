@@ -60,27 +60,27 @@
   ],
   "variables": {
     "identifiers": [
-      {"name": "pid",       "dataset": "ppathl", "label": "Person ID",                        "scale": "ID"},
-      {"name": "hid",       "dataset": "ppathl", "label": "Household ID (Current)",           "scale": "ID"}
+      {"name": "pid",       "dataset": "ppathl", "label": "Person ID",                        "scale": "ID", "type": "id"},
+      {"name": "hid",       "dataset": "ppathl", "label": "Household ID (Current)",           "scale": "ID", "type": "id"}
     ],
     "outcome_primary": [
-      {"name": "plb0097",   "dataset": "pl",     "label": "Possibility to work from home",    "scale": "1=Yes, 2=No, 3=Not possible in my work"}
+      {"name": "plb0097",   "dataset": "pl",     "label": "Willingness to work from home (if allowed)", "scale": "1=Yes, 2=No, 3=Not possible", "type": "categorical"}
     ],
     "outcome_secondary": [
       {"name": "p11101",    "dataset": "pequiv", "label": "Overall life satisfaction",         "scale": "0--10"}
     ],
     "controls_socio": [
       {"name": "age",       "dataset": "derived","label": "Age",                              "scale": "years"},
-      {"name": "sex",       "dataset": "ppathl", "label": "Gender",                           "scale": "1=M, 2=F"},
+      {"name": "sex",       "dataset": "ppathl", "label": "Gender",                           "scale": "1=M, 2=F", "type": "categorical"},
       {"name": "i11102",    "dataset": "pequiv", "label": "Household Post-Gov Income",        "scale": "EUR"},
       {"name": "pgisced97", "dataset": "pgen",   "label": "Education (ISCED-97)",             "scale": "1--6"},
       {"name": "d11107",    "dataset": "pequiv", "label": "Number of children in HH",         "scale": "count"},
-      {"name": "migback",   "dataset": "ppathl", "label": "Migration Background",         "scale": "1=None, 2=Direct, 3=Indirect"},
-      {"name": "l11101",    "dataset": "pequiv", "label": "Federal State",                    "scale": "1--16"}
+      {"name": "migback",   "dataset": "ppathl", "label": "Migration Background",         "scale": "1=None, 2=Direct, 3=Indirect", "type": "categorical"},
+      {"name": "l11101",    "dataset": "pequiv", "label": "Federal State",                    "scale": "1--16", "type": "categorical"}
     ],
     "controls_other": [
       {"name": "plh0173",   "dataset": "pl",     "label": "Satisfaction with work",           "scale": "0--10"},
-      {"name": "pglfs",     "dataset": "pgen",   "label": "Labor Force Status",               "scale": "1--13"},
+      {"name": "pglfs",     "dataset": "pgen",   "label": "Labor Force Status",               "scale": "1--13", "type": "categorical"},
       {"name": "e11101",    "dataset": "pequiv", "label": "Annual work hours",                "scale": "hours"},
       {"name": "plb0193_h", "dataset": "pl",     "label": "Works overtime",                  "scale": "0/1"},
       {"name": "pli0059",   "dataset": "pl",     "label": "Hours of sleep, normal workday",  "scale": "hours"}
