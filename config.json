@@ -22,8 +22,18 @@
   },
   "study": {
     "topic": "Selection into Remote Work: Shifting Determinants of Access (2009-2022)",
-    "pre_covid_years": [2009, 2010, 2011, 2012, 2013, 2014],
-    "post_covid_years": [2021, 2022],
+    "pre_covid_years": [
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014
+    ],
+    "post_covid_years": [
+      2021,
+      2022
+    ],
     "covid_onset_year": 2020,
     "outcome_variable": "remote_work_possibility",
     "soep_outcome_var": "plb0097",
@@ -31,59 +41,194 @@
     "treatment_variable": "various_socioeconomic"
   },
   "panels": [
-    {"key": "identifiers",       "label": "Identifiers"},
-    {"key": "outcome_primary",   "label": "Primary Outcome (Selection)"},
-    {"key": "outcome_secondary", "label": "Secondary Measures"},
-    {"key": "controls_socio",    "label": "Socioeconomic Determinants"},
-    {"key": "controls_other",    "label": "Work & Health Determinants"}
+    {
+      "key": "identifiers",
+      "label": "Identifiers"
+    },
+    {
+      "key": "outcome_primary",
+      "label": "Primary Outcome (Selection)"
+    },
+    {
+      "key": "outcome_secondary",
+      "label": "Secondary Measures"
+    },
+    {
+      "key": "controls_socio",
+      "label": "Socioeconomic Determinants"
+    },
+    {
+      "key": "controls_other",
+      "label": "Work & Health Determinants"
+    }
   ],
   "derived": [
     {
       "name": "age",
       "label": "Age",
       "scale": "years",
-      "source_vars": [{"name": "gebjahr", "dataset": "ppathl"}],
+      "source_vars": [
+        {
+          "name": "gebjahr",
+          "dataset": "ppathl"
+        }
+      ],
       "compute": "syear - gebjahr"
     }
   ],
   "harmonize": [
+    {
+      "name": "p_nace_h",
+      "dataset": "pl",
+      "label": "NACE industry code (harmonized)",
+      "note": "Coalesce: use p_nace, fall back to p_nace2 when missing.",
+      "sources": [
+        {"variable": "p_nace"},
+        {"variable": "p_nace2"}
+      ]
+    },
     {
       "name": "plb0193_h",
       "dataset": "pl",
       "label": "Works overtime",
       "note": "1=Yes, 2=No. Harmonized from v1 (asked to employees) and v2 (asked separately).",
       "sources": [
-        {"variable": "plb0193_v1", "recode": {"1": 1, "2": 0}},
-        {"variable": "plb0193_v2", "recode": {"1": 1, "2": 0}}
+        {
+          "variable": "plb0193_v1",
+          "recode": {
+            "1": 1,
+            "2": 0
+          }
+        },
+        {
+          "variable": "plb0193_v2",
+          "recode": {
+            "1": 1,
+            "2": 0
+          }
+        }
       ]
     }
   ],
   "variables": {
     "identifiers": [
-      {"name": "pid",       "dataset": "ppathl", "label": "Person ID",                        "scale": "ID", "type": "id"},
-      {"name": "hid",       "dataset": "ppathl", "label": "Household ID (Current)",           "scale": "ID", "type": "id"}
+      {
+        "name": "pid",
+        "dataset": "ppathl",
+        "label": "Person ID",
+        "scale": "ID",
+        "type": "id"
+      },
+      {
+        "name": "hid",
+        "dataset": "ppathl",
+        "label": "Household ID (Current)",
+        "scale": "ID",
+        "type": "id"
+      }
     ],
     "outcome_primary": [
-      {"name": "plb0097",   "dataset": "pl",     "label": "Willingness to work from home (if allowed)", "scale": "1=Yes, 2=No, 3=Not possible", "type": "categorical"}
+      {
+        "name": "plb0097",
+        "dataset": "pl",
+        "label": "Willingness to work from home (if allowed)",
+        "scale": "1=Yes, 2=No, 3=Not possible",
+        "type": "categorical"
+      }
     ],
     "outcome_secondary": [
-      {"name": "p11101",    "dataset": "pequiv", "label": "Overall life satisfaction",         "scale": "0--10"}
+      {
+        "name": "p11101",
+        "dataset": "pequiv",
+        "label": "Overall life satisfaction",
+        "scale": "0--10"
+      }
     ],
     "controls_socio": [
-      {"name": "age",       "dataset": "derived","label": "Age",                              "scale": "years"},
-      {"name": "sex",       "dataset": "ppathl", "label": "Gender",                           "scale": "1=M, 2=F", "type": "categorical"},
-      {"name": "i11102",    "dataset": "pequiv", "label": "Household Post-Gov Income",        "scale": "EUR"},
-      {"name": "pgisced97", "dataset": "pgen",   "label": "Education (ISCED-97)",             "scale": "1--6"},
-      {"name": "d11107",    "dataset": "pequiv", "label": "Number of children in HH",         "scale": "count"},
-      {"name": "migback",   "dataset": "ppathl", "label": "Migration Background",         "scale": "1=None, 2=Direct, 3=Indirect", "type": "categorical"},
-      {"name": "l11101",    "dataset": "pequiv", "label": "Federal State",                    "scale": "1--16", "type": "categorical"}
+      {
+        "name": "age",
+        "dataset": "derived",
+        "label": "Age",
+        "scale": "years"
+      },
+      {
+        "name": "sex",
+        "dataset": "ppathl",
+        "label": "Gender",
+        "scale": "1=M, 2=F",
+        "type": "categorical"
+      },
+      {
+        "name": "i11102",
+        "dataset": "pequiv",
+        "label": "Household Post-Gov Income",
+        "scale": "EUR"
+      },
+      {
+        "name": "pgisced97",
+        "dataset": "pgen",
+        "label": "Education (ISCED-97)",
+        "scale": "1--6"
+      },
+      {
+        "name": "d11107",
+        "dataset": "pequiv",
+        "label": "Number of children in HH",
+        "scale": "count"
+      },
+      {
+        "name": "migback",
+        "dataset": "ppathl",
+        "label": "Migration Background",
+        "scale": "1=None, 2=Direct, 3=Indirect",
+        "type": "categorical"
+      },
+      {
+        "name": "l11101",
+        "dataset": "pequiv",
+        "label": "Federal State",
+        "scale": "1--16",
+        "type": "categorical"
+      }
     ],
     "controls_other": [
-      {"name": "plh0173",   "dataset": "pl",     "label": "Satisfaction with work",           "scale": "0--10"},
-      {"name": "pglfs",     "dataset": "pgen",   "label": "Labor Force Status",               "scale": "1--13", "type": "categorical"},
-      {"name": "e11101",    "dataset": "pequiv", "label": "Annual work hours",                "scale": "hours"},
-      {"name": "plb0193_h", "dataset": "pl",     "label": "Works overtime",                  "scale": "0/1"},
-      {"name": "pli0059",   "dataset": "pl",     "label": "Hours of sleep, normal workday",  "scale": "hours"}
+      {
+        "name": "plh0173",
+        "dataset": "pl",
+        "label": "Satisfaction with work",
+        "scale": "0--10"
+      },
+      {
+        "name": "pglfs",
+        "dataset": "pgen",
+        "label": "Labor Force Status",
+        "scale": "1--13",
+        "type": "categorical"
+      },
+      {
+        "name": "e11101",
+        "dataset": "pequiv",
+        "label": "Annual work hours",
+        "scale": "hours"
+      },
+      {
+        "name": "plb0193_h",
+        "dataset": "pl",
+        "label": "Works overtime",
+        "scale": "0/1"
+      },
+      {
+        "name": "p_nace_h",
+        "dataset": "pl",
+        "label": "NACE industry code (harmonized)",
+        "scale": "NACE"
+      },
+      {
+        "name": "pli0059",
+        "dataset": "pl",
+        "label": "Hours of sleep, normal workday",
+        "scale": "hours"
+      }
     ]
   }
 }

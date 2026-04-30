@@ -29,7 +29,13 @@ def save_master(df, output_path="output/data/master.parquet"):
     out_path = Path(output_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(out_path, index=False)
-    df.to_csv(out_path.with_suffix(".csv"), index=False)
-    print(f"\nFinal Master dataframe: {len(df):,} rows")
-    print(f"Wrote {out_path}")
+
+    complete = df.dropna()
+    xlsx_path = out_path.with_suffix(".xlsx")
+    with pd.ExcelWriter(xlsx_path, engine="openpyxl") as writer:
+        df.to_excel(writer, sheet_name="Full", index=False)
+        complete.to_excel(writer, sheet_name="Complete cases", index=False)
+
+    print(f"\nFinal Master dataframe: {len(df):,} rows ({len(complete):,} complete cases)")
+    print(f"Wrote {out_path} and {xlsx_path.name}")
     return df

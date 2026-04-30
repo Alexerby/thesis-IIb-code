@@ -1,12 +1,8 @@
-def apply_sample_restrictions(df, config):
-    """Filters data based on study years defined in config."""
-    print("\nApplying sample restrictions ...")
+def filter_study_years(df, config):
+    """Keeps only rows whose syear falls in the configured pre- and post-covid years."""
+    print("\nFiltering to study years ...")
     initial_rows = len(df)
-    
-    pre = config["study"]["pre_covid_years"]
-    post = config["study"]["post_covid_years"]
-    study_years = pre + post
-    
+    study_years = config["study"]["pre_covid_years"] + config["study"]["post_covid_years"]
     df = df[df["syear"].isin(study_years)].copy()
-    print(f"  Filtered to study years {min(study_years)}–{max(study_years)}: -{initial_rows - len(df):,} rows")
+    print(f"  Kept years {min(study_years)}–{max(study_years)}: -{initial_rows - len(df):,} rows")
     return df

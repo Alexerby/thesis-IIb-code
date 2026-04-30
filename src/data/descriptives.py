@@ -120,10 +120,10 @@ def build_main_table(all_stats: dict, var_meta: dict, panels: list[dict], harmon
         r"\end{table}"
     ]
     return "\n".join(lines)
-
 def build_appendix_table(all_stats: dict, var_meta: dict, panels: list[dict], years: list[int]) -> str:
+    """The original detailed table with yearly N and full descriptives."""
     year_cols = sorted(years)
-    col_spec = "llr" + "r" * len(year_cols) + "rrrrr"
+    col_spec = "llr" + "r" * len(year_cols) + "rrr"
     year_header = " & ".join(str(y) for y in year_cols)
 
     lines = [
@@ -134,7 +134,7 @@ def build_appendix_table(all_stats: dict, var_meta: dict, panels: list[dict], ye
         r"\resizebox{\linewidth}{!}{%",
         rf"\begin{{tabular}}{{{col_spec}}}",
         r"\toprule",
-        rf"Variable & Description & Scale & {year_header} & $N$ & Mean & SD & Min & Max \\",
+        rf"Variable & Description & Scale & {year_header} & $N$ & Mean & SD \\",
         r"\midrule",
     ]
 
@@ -142,7 +142,7 @@ def build_appendix_table(all_stats: dict, var_meta: dict, panels: list[dict], ye
         pk = panel["key"]
         if pk not in var_meta: continue
         panel_label = panel["label"].replace("&", r"\&")
-        lines.append(rf"\multicolumn{{{3 + len(year_cols) + 5}}}{{l}}{{\textit{{{panel_label}}}}} \\")
+        lines.append(rf"\multicolumn{{{3 + len(year_cols) + 3}}}{{l}}{{\textit{{{panel_label}}}}} \\")
         for vdef in var_meta[pk]:
             name = vdef["name"]
             s = all_stats.get(name)
@@ -154,12 +154,12 @@ def build_appendix_table(all_stats: dict, var_meta: dict, panels: list[dict], ye
             tex_name = name.replace("_", r"\_")
             
             if vtype == "id":
-                stats_cells = "& -- & -- & -- & --"
+                stats_cells = "& -- & --"
             elif vtype == "categorical":
                 dist_full = s["full"].get("dist", "--")
-                stats_cells = rf"& \small {dist_full} & -- & -- & --"
+                stats_cells = rf"& \small {dist_full} & --"
             else:
-                stats_cells = rf"& {s['full']['mean']:.3f} & {s['full']['sd']:.3f} & {s['full']['min']:.0f} & {s['full']['max']:.0f}"
+                stats_cells = rf"& {s['full']['mean']:.3f} & {s['full']['sd']:.3f}"
 
             lines.append(rf"\texttt{{{tex_name}}} & {vdef['label']} & {scale} & {n_cells} & {s['full']['n']:,} {stats_cells} \\")
         lines.append(r"\addlinespace")

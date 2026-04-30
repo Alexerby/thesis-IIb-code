@@ -1,5 +1,3 @@
-import pandas as pd
-
 def merge_datasets(frames):
     """Outer merge of all dataframes on pid and syear."""
     print("Merging datasets ...")
@@ -8,13 +6,10 @@ def merge_datasets(frames):
         master = master.merge(df, on=["pid", "syear"], how="outer")
     return master
 
-def compute_derived_variables(df, config):
-    """Computes variables defined in config['derived']."""
-    print("Computing derived variables ...")
+
+def compute_age(df):
+    """Adds age = syear - gebjahr."""
+    print("Computing age ...")
     df = df.copy()
-    for ddef in config.get("derived", []):
-        if ddef["name"] == "age":
-            if "gebjahr" in df.columns:
-                df["age"] = df["syear"] - df["gebjahr"]
-                print("  derived: age = syear - gebjahr")
+    df["age"] = df["syear"] - df["gebjahr"]
     return df

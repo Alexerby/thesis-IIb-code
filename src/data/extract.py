@@ -43,8 +43,11 @@ def apply_harmonize(df: pd.DataFrame, harmonize: list[dict], dataset: str) -> pd
             col = src["variable"].lower()
             if col not in df.columns:
                 continue
-            recode = {int(k): v for k, v in src["recode"].items()}
-            recoded = df[col].map(recode)
+            if "recode" in src:
+                recode = {int(k): v for k, v in src["recode"].items()}
+                recoded = df[col].map(recode)
+            else:
+                recoded = df[col]
             result = result.combine_first(recoded)
         df[name] = result
         print(f"    harmonized {name} from {[s['variable'] for s in hdef['sources']]}")
