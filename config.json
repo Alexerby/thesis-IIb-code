@@ -47,19 +47,19 @@
     },
     {
       "key": "outcome_primary",
-      "label": "Primary Outcome (Selection)"
+      "label": "Primary Outcome"
     },
     {
-      "key": "outcome_secondary",
-      "label": "Secondary Measures"
+      "key": "controls_demo",
+      "label": "Demographic Characteristics (Time-Invariant)"
     },
     {
       "key": "controls_socio",
-      "label": "Socioeconomic Determinants"
+      "label": "Socioeconomic Determinants (Time-Varying)"
     },
     {
       "key": "controls_other",
-      "label": "Work & Health Determinants"
+      "label": "Labour Determinants"
     }
   ],
   "derived": [
@@ -76,17 +76,24 @@
       "compute": "syear - gebjahr"
     }
   ],
+  "nace_sectors": [
+    {"id":  1, "label": "Agriculture, Forestry & Fishing",      "nace_rev1": [1, 2, 5],                                                              "nace_rev2": [1, 2, 3]},
+    {"id":  2, "label": "Mining & Quarrying",                   "nace_rev1": [10, 11, 12, 13, 14],                                                   "nace_rev2": [5, 6, 7, 8, 9]},
+    {"id":  3, "label": "Manufacturing",                        "nace_rev1": [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37], "nace_rev2": [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]},
+    {"id":  4, "label": "Utilities & Waste",                    "nace_rev1": [40, 41],                                                               "nace_rev2": [35, 36, 37, 38, 39]},
+    {"id":  5, "label": "Construction",                         "nace_rev1": [45],                                                                   "nace_rev2": [41, 42, 43]},
+    {"id":  6, "label": "Trade & Hospitality",                  "nace_rev1": [50, 51, 52, 55],                                                       "nace_rev2": [45, 46, 47, 55, 56]},
+    {"id":  7, "label": "Transport & Logistics",                "nace_rev1": [60, 61, 62, 63],                                                       "nace_rev2": [49, 50, 51, 52, 53]},
+    {"id":  8, "label": "Information & Communication",          "nace_rev1": [64, 72],                                                               "nace_rev2": [58, 59, 60, 61, 62, 63]},
+    {"id":  9, "label": "Finance & Insurance",                  "nace_rev1": [65, 66, 67],                                                           "nace_rev2": [64, 65, 66]},
+    {"id": 10, "label": "Professional & Business Services",     "nace_rev1": [70, 71, 73, 74],                                                       "nace_rev2": [68, 69, 70, 71, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82]},
+    {"id": 11, "label": "Public Administration",                "nace_rev1": [75],                                                                   "nace_rev2": [84]},
+    {"id": 12, "label": "Education",                            "nace_rev1": [80],                                                                   "nace_rev2": [85]},
+    {"id": 13, "label": "Health & Social Work",                 "nace_rev1": [85],                                                                   "nace_rev2": [86, 87, 88]},
+    {"id": 14, "label": "Other Services",                       "nace_rev1": [90, 91, 92, 93, 95, 96, 97],                                          "nace_rev2": [90, 91, 92, 93, 94, 95, 96, 97, 98]},
+    {"id": 15, "label": "Extra-territorial",                    "nace_rev1": [99],                                                                   "nace_rev2": [99]}
+  ],
   "harmonize": [
-    {
-      "name": "p_nace_h",
-      "dataset": "pl",
-      "label": "NACE industry code (harmonized)",
-      "note": "Coalesce: use p_nace, fall back to p_nace2 when missing.",
-      "sources": [
-        {"variable": "p_nace"},
-        {"variable": "p_nace2"}
-      ]
-    },
     {
       "name": "plb0193_h",
       "dataset": "pl",
@@ -122,7 +129,7 @@
       {
         "name": "hid",
         "dataset": "ppathl",
-        "label": "Household ID (Current)",
+        "label": "Household ID",
         "scale": "ID",
         "type": "id"
       }
@@ -136,12 +143,20 @@
         "type": "categorical"
       }
     ],
-    "outcome_secondary": [
+    "controls_demo": [
       {
-        "name": "p11101",
-        "dataset": "pequiv",
-        "label": "Overall life satisfaction",
-        "scale": "0--10"
+        "name": "sex",
+        "dataset": "ppathl",
+        "label": "Gender",
+        "scale": "1=M, 2=F",
+        "type": "categorical"
+      },
+      {
+        "name": "migback",
+        "dataset": "ppathl",
+        "label": "Migration Background",
+        "scale": "1=None, 2=Direct, 3=Indirect",
+        "type": "categorical"
       }
     ],
     "controls_socio": [
@@ -150,13 +165,6 @@
         "dataset": "derived",
         "label": "Age",
         "scale": "years"
-      },
-      {
-        "name": "sex",
-        "dataset": "ppathl",
-        "label": "Gender",
-        "scale": "1=M, 2=F",
-        "type": "categorical"
       },
       {
         "name": "i11102",
@@ -177,18 +185,18 @@
         "scale": "count"
       },
       {
-        "name": "migback",
-        "dataset": "ppathl",
-        "label": "Migration Background",
-        "scale": "1=None, 2=Direct, 3=Indirect",
-        "type": "categorical"
-      },
-      {
         "name": "l11101",
         "dataset": "pequiv",
         "label": "Federal State",
         "scale": "1--16",
         "type": "categorical"
+      },
+      {
+        "name": "hlf0019_h",
+        "dataset": "hl",
+        "label": "Total living space",
+        "scale": "sqm",
+        "note": "Household-level (hl), merged on (hid, syear). SOEP pre-harmonized across waves."
       }
     ],
     "controls_other": [
@@ -218,10 +226,24 @@
         "scale": "0/1"
       },
       {
-        "name": "p_nace_h",
+        "name": "p_nace",
         "dataset": "pl",
-        "label": "NACE industry code (harmonized)",
-        "scale": "NACE"
+        "label": "NACE industry code Rev.1 (source for sector)",
+        "scale": "NACE Rev.1"
+      },
+      {
+        "name": "p_nace2",
+        "dataset": "pl",
+        "label": "NACE industry code Rev.2 (source for sector)",
+        "scale": "NACE Rev.2"
+      },
+      {
+        "name": "sector",
+        "dataset": "derived",
+        "label": "Industry Sector (harmonized)",
+        "scale": "1--15",
+        "type": "categorical",
+        "note": "Derived from p_nace (NACE Rev.1) and p_nace2 (NACE Rev.2) via nace_sectors mapping. See compute_sector() in transformers.py."
       },
       {
         "name": "pli0059",

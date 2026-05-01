@@ -1,5 +1,5 @@
 def filter_study_years(df, config):
-    """Keeps only rows whose syear falls in the configured pre- and post-covid years."""
+    """Keeps only rows whose syear falls in the configured Regime 1 and Regime 2 years."""
     print("\nFiltering to study years ...")
     initial_rows = len(df)
     study_years = config["study"]["pre_covid_years"] + config["study"]["post_covid_years"]

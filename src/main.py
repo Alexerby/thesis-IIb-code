@@ -12,6 +12,7 @@ from pathlib import Path
 def run_script(script_path: str, args: list[str] = None):
     """Utility to run a sub-script and handle errors."""
     import os
+
     env = os.environ.copy()
     env["PYTHONPATH"] = str(Path(__file__).parent.parent)
 
@@ -25,9 +26,17 @@ def run_script(script_path: str, args: list[str] = None):
 
 def main():
     parser = argparse.ArgumentParser(description="Thesis IIb Analysis Pipeline")
-    parser.add_argument("--extract", action="store_true", help="Run data extraction from raw SOEP CSVs")
-    parser.add_argument("--force-extract", action="store_true", help="Delete existing parquets and force re-extraction")
-    parser.add_argument("--no-model", action="store_true", help="Skip running the OLS model")
+    parser.add_argument(
+        "--extract", action="store_true", help="Run data extraction from raw SOEP CSVs"
+    )
+    parser.add_argument(
+        "--force-extract",
+        action="store_true",
+        help="Delete existing parquets and force re-extraction",
+    )
+    parser.add_argument(
+        "--no-model", action="store_true", help="Skip running the OLS model"
+    )
     args = parser.parse_args()
 
     # Define paths
@@ -36,7 +45,7 @@ def main():
     model_dir = src_dir / "models"
     parquet_dir = Path("output/data")
 
-    # 1. Extraction
+    # Extraction
     if args.force_extract:
         print("Cleaning up old parquet files for forced re-extraction...")
         for p in parquet_dir.glob("*.parquet"):
@@ -50,22 +59,18 @@ def main():
             print("No extracted data found. Running extraction...")
             run_script(str(data_dir / "extract.py"))
 
-    # 2. Build Master Dataframe
+    # Build Master Dataframe
     run_script(str(src_dir / "build_dataframe.py"))
 
-    # 3. Generate Descriptive Statistics
+    # Generate Descriptive Statistics
     run_script(str(data_dir / "descriptives.py"))
 
-    # 4. Generate Plots
+    # Generate Plots
     run_script(str(data_dir / "plots.py"))
 
-    # 5. Run Selection Model
-    if not args.no_model:
-        run_script(str(model_dir / "selection_model.py"))
-
-    print("\n" + "="*40)
+    print("\n" + "=" * 40)
     print("  PIPELINE COMPLETED SUCCESSFULLY")
-    print("="*40)
+    print("=" * 40)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from src.data.io import load_config
-from src.data.utils import SOEP_MISSING
+from src.data.utils import SOEP_MISSING, HOUSEHOLD_DATASETS
 
 CHUNKSIZE = 50_000
 
@@ -31,6 +31,42 @@ def collect_columns(config: dict) -> dict[str, set[str]]:
         for src in ddef.get("source_vars", []):
             by_dataset.setdefault(src["dataset"], set()).add(src["name"])
     return by_dataset
+
+def expected_parquet_columns(config: dict, dataset: str) -> set[str]:
+    """Returns the columns that should be present in a dataset's parquet after extraction."""
+    harmonized_names = {h["name"] for h in config.get("harmonize", [])}
+    harmonized_for_dataset = {h["name"] for h in config.get("harmonize", []) if h["dataset"] == dataset}
+    direct = set()
+    for panel in config["variables"].values():
+        for vdef in panel:
+            if vdef["dataset"] == dataset and vdef["name"] not in harmonized_names:
+                direct.add(vdef["name"])
+    id_col = "hid" if dataset in HOUSEHOLD_DATASETS else "pid"
+    return {id_col, "syear"} | direct | harmonized_for_dataset
+
+def ensure_datasets(config: dict, parquet_dir: str = "output/data"):
+    """Re-extracts any dataset whose parquet is missing or lacks columns required by config."""
+    out_dir = Path(parquet_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    by_dataset = collect_columns(config)
+    harmonize = config.get("harmonize", [])
+    soep_dir = config["data"]["soep_dir"]
+
+    for dataset, columns in by_dataset.items():
+        out_path = out_dir / f"{dataset}.parquet"
+        expected = expected_parquet_columns(config, dataset)
+
+        if out_path.exists():
+            existing = set(pq.read_schema(out_path).names)
+            missing = expected - existing
+            if not missing:
+                continue
+            print(f"  {dataset}.parquet missing columns {missing} — re-extracting")
+            out_path.unlink()
+        else:
+            print(f"  {dataset}.parquet not found — extracting")
+
+        extract(soep_dir, dataset, columns, harmonize, out_path)
 
 def apply_harmonize(df: pd.DataFrame, harmonize: list[dict], dataset: str) -> pd.DataFrame:
     """Compute harmonized columns in-place and return the dataframe."""
@@ -55,7 +91,8 @@ def apply_harmonize(df: pd.DataFrame, harmonize: list[dict], dataset: str) -> pd
 
 def extract(soep_dir: str, dataset: str, columns: set[str], harmonize: list[dict], out_path: Path):
     csv_path = Path(soep_dir) / f"{dataset}.csv"
-    cols_needed = {"pid", "syear"} | {c.lower() for c in columns}
+    id_col = "hid" if dataset in HOUSEHOLD_DATASETS else "pid"
+    cols_needed = {id_col, "syear"} | {c.lower() for c in columns}
 
     print(f"  {dataset}.csv → {out_path.name}")
     chunks = []

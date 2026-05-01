@@ -1,73 +1,130 @@
 """
-Generates APA-style trend plots for remote work possibility.
-Compares Pre-COVID (2009-2014) vs Post-COVID (2021-2022).
+Generates APA-style descriptive plots for remote work possibility (plb0097).
+Covers all three outcome categories: Yes / No / Not possible in my line of work.
+Print-safe: greyscale shading + hatch patterns distinguish categories without color.
 """
 
-import json
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
+import matplotlib.patches as mpatches
+import matplotlib.ticker as mticker
 
-def load_config():
-    config_path = Path(__file__).parent.parent.parent / "config.json"
-    with open(config_path) as f:
-        return json.load(f)
+from src.data.io import load_config
+
+
+_CATEGORY_MAP = {1: "Yes", 2: "No", 3: "Not possible"}
+
+_STYLE = {
+    "Yes":          {"color": "#2b2b2b", "hatch": ""},
+    "No":           {"color": "#888888", "hatch": "///"},
+    "Not possible": {"color": "#d4d4d4", "hatch": ""},
+}
+
+
+def _apply_apa_style():
+    plt.rcParams.update({
+        "font.family":       "sans-serif",
+        "font.sans-serif":   ["Arial", "Helvetica", "DejaVu Sans"],
+        "font.size":         10,
+        "axes.spines.top":   False,
+        "axes.spines.right": False,
+        "axes.grid":         False,
+        "figure.dpi":        300,
+        "hatch.linewidth":   0.6,
+    })
+
+
+def plot_wwfh_stacked(df: pd.DataFrame, out_dir: Path) -> None:
+    valid = df[df["plb0097"].isin([1, 2, 3])].copy()
+    valid["response"] = valid["plb0097"].map(_CATEGORY_MAP)  # type: ignore[arg-type]
+
+    counts = (
+        valid.groupby(["syear", "response"])
+        .size()
+        .unstack("response")  # type: ignore[call-overload]
+    )
+    counts = counts.reindex(  # type: ignore[call-overload]
+        ["Yes", "No", "Not possible"], axis="columns", fill_value=0
+    )
+    pct: pd.DataFrame = counts.div(counts.sum(axis=1), axis=0) * 100
+
+    fig, ax = plt.subplots(figsize=(11, 5))
+
+    x = list(range(len(pct)))
+    bottom = [0.0] * len(pct)
+
+    for cat in ["Yes", "No", "Not possible"]:
+        vals = pct[cat].tolist()
+        style = _STYLE[cat]
+        bars = ax.bar(
+            x, vals, bottom=bottom,
+            color=style["color"],
+            hatch=style["hatch"],
+            edgecolor="white",
+            linewidth=0.5,
+            label=cat,
+            width=0.72,
+        )
+        # Percentage labels inside bars
+        for bar, val, bot in zip(bars, vals, bottom):
+            if val >= 6:
+                mid = bot + val / 2
+                text_color = "white" if style["color"] == "#2b2b2b" else "black"
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    mid,
+                    f"{val:.0f}%",
+                    ha="center", va="center",
+                    fontsize=7.5, color=text_color,
+                )
+        bottom = [b + v for b, v in zip(bottom, vals)]
+
+    ax.set_xticks(x)
+    ax.set_xticklabels([str(y) for y in pct.index], rotation=45, ha="right")
+    ax.set_xlabel("Survey Year", labelpad=8)
+    ax.set_ylabel("Share (%)", labelpad=8)
+    ax.yaxis.set_major_formatter(mticker.FormatStrFormatter("%g%%"))
+    ax.set_ylim(0, 106)
+
+    handles = [
+        mpatches.Patch(
+            facecolor=_STYLE[c]["color"],
+            hatch=_STYLE[c]["hatch"],
+            edgecolor="grey",
+            label=c,
+        )
+        for c in ["Yes", "No", "Not possible"]
+    ]
+    ax.legend(handles=handles, frameon=False, fontsize=9, loc="upper right")
+
+    ax.set_title(
+        "Willingness to Work from Home by Survey Year",
+        pad=12, fontsize=11, fontweight="normal",
+    )
+
+    fig.tight_layout()
+    out_path = out_dir / "wwfh_stacked.png"
+    fig.savefig(out_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved {out_path}")
+
 
 def main():
-    config = load_config()
-    
     master_path = Path("output/data/master.parquet")
     if not master_path.exists():
-        print(f"Error: {master_path} not found.")
+        print(f"Error: {master_path} not found. Run build_dataframe.py first.")
         return
 
+    config = load_config()
+    _apply_apa_style()
+
     df = pd.read_parquet(master_path)
-    
-    # APA Style Settings
-    plt.rcParams['font.family'] = 'sans-serif'
-    plt.rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'DejaVu Sans']
-    sns.set_style("white") # No grid lines for APA
-    
-    # --- Yearly Trend of Remote Work Possibility ---
-    plt.figure(figsize=(8, 5))
-    
-    treatment_var = config["variables"]["outcome_primary"][0]["name"].lower()
-    
-    # Calculate stats
-    trend_df = df.copy()
-    trend_df = trend_df[trend_df[treatment_var].isin([1, 2, 3])]
-    
-    # Line 1: Share of total workforce (1 / 1+2+3)
-    total_share = trend_df.groupby('syear').apply(lambda x: (x[treatment_var] == 1).mean() * 100)
-    
-    # Line 2: Share of capable jobs (1 / 1+2)
-    capable_df = trend_df[trend_df[treatment_var].isin([1, 2])]
-    capable_share = capable_df.groupby('syear').apply(lambda x: (x[treatment_var] == 1).mean() * 100)
+    out_dir = Path(config["output"]["figures_dir"])
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Helper to plot segments (to avoid connecting 2014 to 2021)
-    def plot_segments(data, label, marker, color, linestyle):
-        pre = data[data.index <= 2014]
-        post = data[data.index >= 2021]
-        sns.lineplot(x=pre.index, y=pre.values, marker=marker, label=label, color=color, linewidth=2, linestyle=linestyle)
-        sns.lineplot(x=post.index, y=post.values, marker=marker, color=color, linewidth=2, linestyle=linestyle)
+    plot_wwfh_stacked(df, out_dir)
 
-    plot_segments(total_share, "Total Workforce", 'o', '#4a4a4a', '-')
-    plot_segments(capable_share, "Remote-Capable Jobs Only", 's', '#9a9a9a', '--')
-
-    plt.xlabel("Year", fontsize=11)
-    plt.ylabel("Possibility to Work from Home (%)", fontsize=11)
-    plt.ylim(0, 100)
-    plt.xticks(total_share.index)
-    
-    plt.legend(title="Sample Definition", frameon=False)
-    sns.despine()
-    
-    figures_dir = Path(config["output"]["figures_dir"])
-    figures_dir.mkdir(parents=True, exist_ok=True)
-    out_path_trend = figures_dir / "remote_possibility_trend.png"
-    plt.savefig(out_path_trend, dpi=300, bbox_inches='tight')
-    print(f"Saved dual-line trend plot to {out_path_trend}")
 
 if __name__ == "__main__":
     main()
