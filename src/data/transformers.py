@@ -1,7 +1,25 @@
 import pandas as pd
 
-def merge_datasets(frames):
-    """Outer merge of all dataframes on pid and syear."""
+
+def merge_datasets(frames: list[pd.DataFrame]) -> pd.DataFrame:
+    """
+    Outer-merge all person-level DataFrames on ``pid`` and ``syear``.
+
+    An outer join preserves every observation that appears in any individual
+    dataset, filling missing columns with NaN.
+
+    Parameters
+    ----------
+    frames : list[pd.DataFrame]
+        Person-level DataFrames, each containing ``pid`` and ``syear``
+        columns.
+
+    Returns
+    -------
+    pd.DataFrame
+        Single merged DataFrame with one row per unique ``(pid, syear)``
+        combination across all input frames.
+    """
     print("Merging datasets ...")
     master = frames[0]
     for df in frames[1:]:
@@ -9,8 +27,23 @@ def merge_datasets(frames):
     return master
 
 
-def merge_household_data(df, frames):
-    """Left-joins household-level datasets on (hid, syear)."""
+def merge_household_data(df: pd.DataFrame, frames: list[pd.DataFrame]) -> pd.DataFrame:
+    """
+    Left-join household-level DataFrames onto the master person DataFrame.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Master person-level DataFrame containing ``hid`` and ``syear``.
+    frames : list[pd.DataFrame]
+        Household-level DataFrames, each keyed by ``(hid, syear)``.
+
+    Returns
+    -------
+    pd.DataFrame
+        Master DataFrame with household columns appended. Person rows
+        without a matching household record receive NaN.
+    """
     if not frames:
         return df
     print("Merging household datasets ...")
@@ -18,24 +51,56 @@ def merge_household_data(df, frames):
         df = df.merge(hdf, on=["hid", "syear"], how="left")
     return df
 
-def compute_age(df):
-    """Adds age = syear - gebjahr."""
+
+def compute_age(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Derive respondent age and drop the birth-year column.
+
+    Age is computed as ``syear - gebjahr`` and stored in a new ``age``
+    column. The source column ``gebjahr`` is then removed.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing ``syear`` (survey year) and ``gebjahr``
+        (birth year) columns.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with ``age`` added and ``gebjahr`` dropped.
+    """
     print("Computing age ...")
-    df = df.copy()
     df["age"] = df["syear"] - df["gebjahr"]
+    df = df.drop(columns=["gebjahr"])
     return df
 
-def compute_sector(df, config):
-    """
-    Maps p_nace (NACE Rev.1) and p_nace2 (NACE Rev.2) to a common sector id
-    using the nace_sectors mapping in config, then drops the source columns.
 
-    The two revisions use incompatible numeric codes, so each is mapped
-    separately before coalescing (Rev.1 takes priority where both exist).
-    To change groupings, edit config['nace_sectors'] and re-run.
+def compute_sector(df: pd.DataFrame, config: dict) -> pd.DataFrame:
+    """
+    Map NACE industry codes to a common sector identifier and drop source columns.
+
+    Both NACE revisions use incompatible numeric codes, so each is mapped
+    separately before coalescing — Rev.1 (``p_nace``) takes priority where
+    both are present. The raw source columns are dropped after mapping.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame containing ``p_nace`` (NACE Rev.1) and/or ``p_nace2``
+        (NACE Rev.2) columns.
+    config : dict
+        Project config with a ``"nace_sectors"`` list; each entry must
+        have ``id``, ``nace_rev1`` (list of int codes), and ``nace_rev2``
+        (list of int codes).
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with a new nullable ``sector`` (Int64) column and
+        ``p_nace`` / ``p_nace2`` removed.
     """
     print("Computing industry sector ...")
-    df = df.copy()
 
     rev1_map = {}
     rev2_map = {}

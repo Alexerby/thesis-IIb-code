@@ -9,8 +9,26 @@ import sys
 from pathlib import Path
 
 
-def run_script(script_path: str, args: list[str] = None):
-    """Utility to run a sub-script and handle errors."""
+def run_script(script_path: str, args: list[str] | None = None) -> None:
+    """
+    Run a pipeline sub-script as a subprocess and exit on failure.
+
+    The current project root is added to ``PYTHONPATH`` so that
+    ``src.*`` imports resolve correctly in each sub-script.
+
+    Parameters
+    ----------
+    script_path : str
+        Absolute or relative path to the Python script to execute.
+    args : list[str] or None, optional
+        Additional command-line arguments forwarded to the script.
+        Defaults to None (no extra arguments).
+
+    Raises
+    ------
+    SystemExit
+        Propagates the sub-script's non-zero exit code on failure.
+    """
     import os
 
     env = os.environ.copy()
@@ -24,7 +42,8 @@ def run_script(script_path: str, args: list[str] = None):
         sys.exit(result.returncode)
 
 
-def main():
+def main() -> None:
+    """Parse CLI flags and run the full analysis pipeline in order."""
     parser = argparse.ArgumentParser(description="Thesis IIb Analysis Pipeline")
     parser.add_argument(
         "--extract", action="store_true", help="Run data extraction from raw SOEP CSVs"

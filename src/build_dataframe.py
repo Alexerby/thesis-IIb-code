@@ -15,7 +15,21 @@ from src.data.filters import filter_study_years
 from src.data.extract import ensure_datasets
 
 
-def main():
+def main() -> None:
+    """
+    Execute the full master-dataframe pipeline.
+
+    Steps (in order):
+
+    1. Ensure all required Parquet files exist (re-extract if stale).
+    2. Load person-level and household-level Parquet datasets.
+    3. Outer-merge all person frames on ``(pid, syear)``.
+    4. Left-join household data on ``(hid, syear)``.
+    5. Derive ``age`` from birth year.
+    6. Map NACE codes to a common ``sector`` identifier.
+    7. Filter rows to the configured study years.
+    8. Save the master dataframe to Parquet and Excel.
+    """
     config = load_config()
 
     print("Starting master data pipeline ...")

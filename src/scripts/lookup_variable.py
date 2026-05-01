@@ -15,13 +15,54 @@ import sys
 from pathlib import Path
 
 
-def load_config():
+def load_config() -> dict:
+    """
+    Load the project configuration from ``config.json``.
+
+    Returns
+    -------
+    dict
+        Parsed JSON configuration located at the project root (three
+        directories above this script).
+    """
     config_path = Path(__file__).parent.parent.parent / "config.json"
     with open(config_path) as f:
         return json.load(f)
 
 
-def search_variables(soep_dir: str, query: str, dataset: str | None, match_any: bool = False) -> list[dict]:
+def search_variables(
+    soep_dir: str,
+    query: str,
+    dataset: str | None,
+    match_any: bool = False,
+) -> list[dict]:
+    """
+    Search SOEP codebook files for variables matching a query.
+
+    By default all query words must be present in the variable name or
+    English label (AND logic). Pass ``match_any=True`` for OR logic.
+
+    Parameters
+    ----------
+    soep_dir : str
+        Root directory containing the SOEP ``*_variables.csv`` codebook
+        files.
+    query : str
+        Space-separated search terms (case-insensitive) matched against
+        the variable name and English label.
+    dataset : str or None
+        If provided, restricts the search to ``<dataset>_variables.csv``
+        only. If ``None``, all codebook files are searched.
+    match_any : bool, optional
+        If True, any single term is sufficient for a match (OR).
+        If False (default), all terms must match (AND).
+
+    Returns
+    -------
+    list[dict]
+        List of match dicts with keys ``dataset``, ``variable``,
+        ``label``, and ``label_de``.
+    """
     results = []
     terms = query.lower().split()
     pattern = f"*_variables.csv" if not dataset else f"{dataset}_variables.csv"
@@ -44,6 +85,26 @@ def search_variables(soep_dir: str, query: str, dataset: str | None, match_any: 
 
 
 def get_values(soep_dir: str, variable: str, dataset: str | None) -> list[dict]:
+    """
+    Retrieve value labels for a specific SOEP variable.
+
+    Parameters
+    ----------
+    soep_dir : str
+        Root directory containing the SOEP ``*_values.csv`` codebook
+        files.
+    variable : str
+        Exact variable name to look up (case-insensitive).
+    dataset : str or None
+        If provided, restricts the search to ``<dataset>_values.csv``
+        only. If ``None``, all value-label files are searched.
+
+    Returns
+    -------
+    list[dict]
+        List of value dicts with keys ``dataset``, ``value``, ``label``,
+        and ``label_de``.
+    """
     results = []
     pattern = f"*_values.csv" if not dataset else f"{dataset}_values.csv"
     for path in sorted(Path(soep_dir).glob(pattern)):
@@ -58,7 +119,8 @@ def get_values(soep_dir: str, variable: str, dataset: str | None) -> list[dict]:
     return results
 
 
-def main():
+def main() -> None:
+    """CLI entry point: search SOEP codebook and print matching variables."""
     parser = argparse.ArgumentParser(description="Look up SOEP-Core variables")
     parser.add_argument("query", help="Variable name or keyword to search for")
     parser.add_argument("--dataset", "-d", help="Restrict to a specific dataset (e.g. pl, pgen, pequiv)")

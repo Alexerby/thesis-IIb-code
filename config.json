@@ -21,24 +21,11 @@
     "data_dir": "output/data"
   },
   "study": {
-    "topic": "Selection into Remote Work: Shifting Determinants of Access (2009-2022)",
-    "pre_covid_years": [
-      2009,
-      2010,
-      2011,
-      2012,
-      2013,
-      2014
-    ],
-    "post_covid_years": [
-      2021,
-      2022
-    ],
-    "covid_onset_year": 2020,
-    "outcome_variable": "remote_work_possibility",
-    "soep_outcome_var": "plb0097",
-    "soep_outcome_dataset": "pl",
-    "treatment_variable": "various_socioeconomic"
+    "topic": "Selection into Remote Work: Determinants of Willingness and Access (2009-2014)",
+    "study_years": [2009, 2010, 2011, 2012, 2013, 2014],
+    "outcome_willingness": "plb0097",
+    "outcome_actual": "plb0095_v1",
+    "soep_outcome_dataset": "pl"
   },
   "panels": [
     {
@@ -138,8 +125,15 @@
       {
         "name": "plb0097",
         "dataset": "pl",
-        "label": "Willingness to work from home (if allowed)",
+        "label": "Willing to WFH",
         "scale": "1=Yes, 2=No, 3=Not possible",
+        "type": "categorical"
+      },
+      {
+        "name": "plb0095_v1",
+        "dataset": "pl",
+        "label": "Actually WFH",
+        "scale": "1=Yes, 2=No",
         "type": "categorical"
       }
     ],
@@ -154,7 +148,7 @@
       {
         "name": "migback",
         "dataset": "ppathl",
-        "label": "Migration Background",
+        "label": "Migr. Background",
         "scale": "1=None, 2=Direct, 3=Indirect",
         "type": "categorical"
       }
@@ -169,19 +163,19 @@
       {
         "name": "i11102",
         "dataset": "pequiv",
-        "label": "Household Post-Gov Income",
+        "label": "HH Post-Gov Income",
         "scale": "EUR"
       },
       {
         "name": "pgisced97",
         "dataset": "pgen",
-        "label": "Education (ISCED-97)",
+        "label": "Educ. (ISCED-97)",
         "scale": "1--6"
       },
       {
         "name": "d11107",
         "dataset": "pequiv",
-        "label": "Number of children in HH",
+        "label": "Num. children in HH",
         "scale": "count"
       },
       {
@@ -194,7 +188,7 @@
       {
         "name": "hlf0019_h",
         "dataset": "hl",
-        "label": "Total living space",
+        "label": "Living space",
         "scale": "sqm",
         "note": "Household-level (hl), merged on (hid, syear). SOEP pre-harmonized across waves."
       }
@@ -203,53 +197,47 @@
       {
         "name": "plh0173",
         "dataset": "pl",
-        "label": "Satisfaction with work",
+        "label": "Work satisfaction",
         "scale": "0--10"
       },
       {
         "name": "pglfs",
         "dataset": "pgen",
-        "label": "Labor Force Status",
+        "label": "LF Status",
         "scale": "1--13",
         "type": "categorical"
       },
       {
         "name": "e11101",
         "dataset": "pequiv",
-        "label": "Annual work hours",
+        "label": "Annual work hrs",
         "scale": "hours"
       },
       {
         "name": "plb0193_h",
         "dataset": "pl",
-        "label": "Works overtime",
+        "label": "Overtime",
         "scale": "0/1"
       },
       {
         "name": "p_nace",
         "dataset": "pl",
-        "label": "NACE industry code Rev.1 (source for sector)",
+        "label": "NACE Rev.1 (source)",
         "scale": "NACE Rev.1"
       },
       {
         "name": "p_nace2",
         "dataset": "pl",
-        "label": "NACE industry code Rev.2 (source for sector)",
+        "label": "NACE Rev.2 (source)",
         "scale": "NACE Rev.2"
       },
       {
         "name": "sector",
         "dataset": "derived",
-        "label": "Industry Sector (harmonized)",
+        "label": "Industry Sector",
         "scale": "1--15",
         "type": "categorical",
         "note": "Derived from p_nace (NACE Rev.1) and p_nace2 (NACE Rev.2) via nace_sectors mapping. See compute_sector() in transformers.py."
-      },
-      {
-        "name": "pli0059",
-        "dataset": "pl",
-        "label": "Hours of sleep, normal workday",
-        "scale": "hours"
       }
     ]
   }

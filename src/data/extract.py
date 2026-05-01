@@ -13,8 +13,27 @@ from src.data.utils import SOEP_MISSING, HOUSEHOLD_DATASETS
 
 CHUNKSIZE = 50_000
 
+
 def collect_columns(config: dict) -> dict[str, set[str]]:
-    """Return {dataset: {columns}} needed, including harmonize and derived sources."""
+    """
+    Build a mapping of dataset → required column names from config.
+
+    Includes direct variables, harmonize source columns, and derived
+    source variables. Variables flagged as ``"derived"`` dataset are
+    excluded since they are computed in-memory during the pipeline.
+
+    Parameters
+    ----------
+    config : dict
+        Project config containing ``"variables"``, ``"harmonize"``, and
+        ``"derived"`` sections.
+
+    Returns
+    -------
+    dict[str, set[str]]
+        Mapping ``{dataset_name: {column_name, ...}}`` for every dataset
+        that needs to be extracted.
+    """
     harmonized_names = {h["name"] for h in config.get("harmonize", [])}
     by_dataset: dict[str, set[str]] = {}
     for panel in config["variables"].values():
@@ -32,8 +51,28 @@ def collect_columns(config: dict) -> dict[str, set[str]]:
             by_dataset.setdefault(src["dataset"], set()).add(src["name"])
     return by_dataset
 
+
 def expected_parquet_columns(config: dict, dataset: str) -> set[str]:
-    """Returns the columns that should be present in a dataset's parquet after extraction."""
+    """
+    Compute the set of columns that should exist in a dataset's Parquet file.
+
+    Used by ``ensure_datasets`` to detect whether a cached Parquet is
+    stale and needs re-extraction.
+
+    Parameters
+    ----------
+    config : dict
+        Project config containing ``"variables"`` and ``"harmonize"``
+        sections.
+    dataset : str
+        Name of the SOEP dataset (e.g. ``"pl"``, ``"pgen"``).
+
+    Returns
+    -------
+    set[str]
+        Expected column names including the ID key (``pid`` or ``hid``),
+        ``syear``, direct variables, and harmonized output columns.
+    """
     harmonized_names = {h["name"] for h in config.get("harmonize", [])}
     harmonized_for_dataset = {h["name"] for h in config.get("harmonize", []) if h["dataset"] == dataset}
     direct = set()
@@ -44,8 +83,23 @@ def expected_parquet_columns(config: dict, dataset: str) -> set[str]:
     id_col = "hid" if dataset in HOUSEHOLD_DATASETS else "pid"
     return {id_col, "syear"} | direct | harmonized_for_dataset
 
-def ensure_datasets(config: dict, parquet_dir: str = "output/data"):
-    """Re-extracts any dataset whose parquet is missing or lacks columns required by config."""
+
+def ensure_datasets(config: dict, parquet_dir: str = "output/data") -> None:
+    """
+    Re-extract any dataset whose Parquet is missing or has stale columns.
+
+    Compares each dataset's existing Parquet schema against the columns
+    required by config. Missing or incomplete files are deleted and
+    re-extracted from the raw SOEP CSVs.
+
+    Parameters
+    ----------
+    config : dict
+        Project config used to determine required datasets and columns.
+    parquet_dir : str, optional
+        Directory where Parquet files are stored. Defaults to
+        ``"output/data"``.
+    """
     out_dir = Path(parquet_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     by_dataset = collect_columns(config)
@@ -68,34 +122,100 @@ def ensure_datasets(config: dict, parquet_dir: str = "output/data"):
 
         extract(soep_dir, dataset, columns, harmonize, out_path)
 
-def apply_harmonize(df: pd.DataFrame, harmonize: list[dict], dataset: str) -> pd.DataFrame:
-    """Compute harmonized columns in-place and return the dataframe."""
+
+def apply_harmonize(chunk: pd.DataFrame, harmonize: list[dict], dataset: str) -> pd.DataFrame:
+    """
+    Compute harmonized columns by coalescing source variables row-wise.
+
+    Each harmonize definition specifies a target column name and one or more
+    source variables with optional value recoding. Sources are applied in
+    order: the first non-null value wins (``fillna`` chaining). Safe to call
+    per-chunk during streaming extraction.
+
+    Parameters
+    ----------
+    chunk : pd.DataFrame
+        A single chunk of a SOEP CSV containing the source columns for
+        this dataset's harmonize definitions.
+    harmonize : list[dict]
+        Full harmonize config list; entries not matching ``dataset`` are
+        skipped.
+    dataset : str
+        Name of the dataset being processed (e.g. ``"pl"``).
+
+    Returns
+    -------
+    pd.DataFrame
+        Chunk with harmonized output columns added in-place.
+    """
     for hdef in harmonize:
         if hdef["dataset"] != dataset:
             continue
         name = hdef["name"].lower()
-        result = pd.Series(pd.NA, index=df.index, dtype="Float64")
+        result = pd.Series(pd.NA, index=chunk.index, dtype="Float64")
         for src in hdef["sources"]:
             col = src["variable"].lower()
-            if col not in df.columns:
+            if col not in chunk.columns:
                 continue
             if "recode" in src:
                 recode = {int(k): v for k, v in src["recode"].items()}
-                recoded = df[col].map(recode)
+                recoded = chunk[col].map(recode)  # type: ignore[arg-type]
             else:
-                recoded = df[col]
-            result = result.combine_first(recoded)
-        df[name] = result
-        print(f"    harmonized {name} from {[s['variable'] for s in hdef['sources']]}")
-    return df
+                recoded = chunk[col]
+            result = result.fillna(recoded)
+        chunk[name] = result
+    return chunk
 
-def extract(soep_dir: str, dataset: str, columns: set[str], harmonize: list[dict], out_path: Path):
+
+def extract(
+    soep_dir: str,
+    dataset: str,
+    columns: set[str],
+    harmonize: list[dict],
+    out_path: Path,
+) -> None:
+    """
+    Stream a SOEP CSV in chunks and write a slim Parquet file.
+
+    Only the columns required by config are kept. SOEP missing-value codes
+    are converted to ``pd.NA`` during chunked reading. Harmonized columns
+    are computed per-chunk via ``apply_harmonize`` before writing.
+
+    Parameters
+    ----------
+    soep_dir : str
+        Root directory containing the SOEP CSV files.
+    dataset : str
+        Dataset name (e.g. ``"pl"``); the CSV is expected at
+        ``<soep_dir>/<dataset>.csv``.
+    columns : set[str]
+        Set of raw column names to read from the CSV (before harmonize
+        source removal).
+    harmonize : list[dict]
+        Full harmonize config list; only entries matching ``dataset`` are
+        applied.
+    out_path : Path
+        Destination path for the output Parquet file.
+    """
     csv_path = Path(soep_dir) / f"{dataset}.csv"
     id_col = "hid" if dataset in HOUSEHOLD_DATASETS else "pid"
     cols_needed = {id_col, "syear"} | {c.lower() for c in columns}
 
-    print(f"  {dataset}.csv → {out_path.name}")
-    chunks = []
+    harmonize_sources = {
+        s["variable"].lower()
+        for h in harmonize if h["dataset"] == dataset
+        for s in h["sources"]
+    }
+    keep = {id_col, "syear"} | ({c.lower() for c in columns} - harmonize_sources) | \
+           {h["name"].lower() for h in harmonize if h["dataset"] == dataset}
+
+    harmonized_names = [h["name"].lower() for h in harmonize if h["dataset"] == dataset]
+    if harmonized_names:
+        print(f"  {dataset}.csv → {out_path.name}  (harmonizing: {harmonized_names})")
+    else:
+        print(f"  {dataset}.csv → {out_path.name}")
+
+    writer = None
     for i, chunk in enumerate(pd.read_csv(
         csv_path,
         usecols=lambda c: c.lower() in cols_needed,
@@ -104,31 +224,29 @@ def extract(soep_dir: str, dataset: str, columns: set[str], harmonize: list[dict
     )):
         chunk.columns = chunk.columns.str.lower()
         for col in chunk.columns:
-            if col in {"pid", "syear"}:
+            if col in {id_col, "syear"}:
                 continue
             chunk[col] = pd.to_numeric(chunk[col], errors="coerce")
             chunk.loc[chunk[col].isin(SOEP_MISSING), col] = pd.NA
-        chunks.append(chunk)
+
+        chunk = apply_harmonize(chunk, harmonize, dataset)
+        chunk = chunk[[c for c in chunk.columns if c in keep]]
+
+        table = pa.Table.from_pandas(chunk, preserve_index=False)
+        if writer is None:
+            writer = pq.ParquetWriter(out_path, table.schema)
+        writer.write_table(table)
+
         if (i + 1) % 10 == 0:
             print(f"    ... {(i + 1) * CHUNKSIZE:,} rows processed")
 
-    df = pd.concat(chunks, ignore_index=True)
-    df = apply_harmonize(df, harmonize, dataset)
-
-    harmonize_sources = {
-        s["variable"].lower()
-        for h in harmonize if h["dataset"] == dataset
-        for s in h["sources"]
-    }
-    keep = {"pid", "syear"} | ({c.lower() for c in columns} - harmonize_sources) | \
-           {h["name"].lower() for h in harmonize if h["dataset"] == dataset}
-    df = df[[c for c in df.columns if c in keep]]
-
-    table = pa.Table.from_pandas(df, preserve_index=False)
-    pq.write_table(table, out_path)
+    if writer:
+        writer.close()
     print(f"    done.")
 
-def main():
+
+def main() -> None:
+    """Extract all datasets defined in config to Parquet, skipping existing files."""
     config = load_config()
     soep_dir = config["data"]["soep_dir"]
     out_dir = Path("output/data")
@@ -144,6 +262,7 @@ def main():
             print(f"  {out_path.name} already exists — skipping")
             continue
         extract(soep_dir, dataset, columns, harmonize, out_path)
+
 
 if __name__ == "__main__":
     main()

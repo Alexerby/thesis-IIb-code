@@ -19,14 +19,49 @@ SOEP_MISSING = {-8, -7, -6, -5, -4, -3, -2, -1}
 CHUNKSIZE = 50_000
 
 
-def load_config():
+def load_config() -> dict:
+    """
+    Load the project configuration from ``config.json``.
+
+    Returns
+    -------
+    dict
+        Parsed JSON configuration located at the project root (three
+        directories above this script).
+    """
     config_path = Path(__file__).parent.parent.parent / "config.json"
     with open(config_path) as f:
         return json.load(f)
 
 
-def find_dataset_in_codebook(soep_dir: str, variable: str, prefer: set[str] | None = None) -> str | None:
-    """Return dataset name for variable, preferring datasets in `prefer` set."""
+def find_dataset_in_codebook(
+    soep_dir: str,
+    variable: str,
+    prefer: set[str] | None = None,
+) -> str | None:
+    """
+    Search SOEP codebook CSVs for the dataset that contains a variable.
+
+    Preferred datasets (e.g. key annual files) are searched first so that
+    the most relevant dataset is returned when a variable appears in
+    multiple files.
+
+    Parameters
+    ----------
+    soep_dir : str
+        Root directory containing the SOEP ``*_variables.csv`` codebook
+        files.
+    variable : str
+        Variable name to search for (case-insensitive).
+    prefer : set[str] or None, optional
+        Dataset names to search before all others. Defaults to None
+        (alphabetical order).
+
+    Returns
+    -------
+    str or None
+        Dataset name (e.g. ``"pl"``) if found, otherwise ``None``.
+    """
     all_paths = sorted(Path(soep_dir).glob("*_variables.csv"))
     # Search preferred datasets first, then the rest
     if prefer:
@@ -43,6 +78,25 @@ def find_dataset_in_codebook(soep_dir: str, variable: str, prefer: set[str] | No
 
 
 def find_csv_path(config: dict, dataset: str) -> Path | None:
+    """
+    Locate the raw CSV file for a SOEP dataset.
+
+    Checks ``config["data"]["key_files"]`` for an explicit filename
+    override before falling back to ``<dataset>.csv``.
+
+    Parameters
+    ----------
+    config : dict
+        Project config containing ``config["data"]["soep_dir"]`` and
+        optionally ``config["data"]["key_files"]``.
+    dataset : str
+        Dataset name (e.g. ``"pl"``).
+
+    Returns
+    -------
+    Path or None
+        Absolute path to the CSV if it exists, otherwise ``None``.
+    """
     soep_dir = Path(config["data"]["soep_dir"])
     # Try key_files mapping first, then fall back to <dataset>.csv
     filename = config["data"].get("key_files", {}).get(dataset, f"{dataset}.csv")
@@ -51,6 +105,25 @@ def find_csv_path(config: dict, dataset: str) -> Path | None:
 
 
 def get_value_labels(soep_dir: str, variable: str, dataset: str) -> dict[int, str]:
+    """
+    Extract value labels for a variable from the SOEP codebook.
+
+    Parameters
+    ----------
+    soep_dir : str
+        Root directory containing the SOEP ``*_values.csv`` codebook
+        files.
+    variable : str
+        Variable name to look up (case-insensitive).
+    dataset : str
+        Dataset name; only ``<dataset>_values.csv`` is searched.
+
+    Returns
+    -------
+    dict[int, str]
+        Mapping of integer code → English label string. Returns an empty
+        dict if the values file does not exist or no labels are found.
+    """
     labels: dict[int, str] = {}
     path = Path(soep_dir) / f"{dataset}_values.csv"
     if not path.exists():
@@ -69,18 +142,42 @@ def get_value_labels(soep_dir: str, variable: str, dataset: str) -> dict[int, st
 
 
 def read_variable(csv_path: Path, variable: str) -> pd.DataFrame:
+    """
+    Read a single variable from a large SOEP CSV in chunks.
+
+    Reads ``pid``, ``syear``, and ``variable`` columns only. SOEP
+    system-missing codes are converted to ``NaN``.
+
+    Parameters
+    ----------
+    csv_path : Path
+        Path to the SOEP dataset CSV file.
+    variable : str
+        Variable name to extract (case-insensitive).
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with columns ``[pid, syear, variable]`` containing all
+        rows concatenated across chunks.
+    """
     cols = ["pid", "syear", variable]
     chunks = []
     for chunk in pd.read_csv(csv_path, usecols=lambda c: c.lower() in {v.lower() for v in cols},
                              chunksize=CHUNKSIZE, low_memory=False):
         chunk.columns = [c.lower() for c in chunk.columns]
+        if variable not in chunk.columns:
+            return pd.DataFrame(columns=list(chunk.columns))
         chunk[variable] = pd.to_numeric(chunk[variable], errors="coerce")
         chunk.loc[chunk[variable].isin(SOEP_MISSING), variable] = float("nan")
         chunks.append(chunk)
+    if not chunks:
+        return pd.DataFrame(columns=cols)
     return pd.concat(chunks, ignore_index=True)
 
 
-def main():
+def main() -> None:
+    """CLI entry point: print descriptive statistics for a SOEP variable."""
     parser = argparse.ArgumentParser(description="Describe a SOEP-Core variable")
     parser.add_argument("--variable", "-v", required=True, help="Variable name (e.g. p11101)")
     parser.add_argument("--dataset", "-d", help="Dataset to load from (auto-detected if omitted)")

@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import pandas as pd
 import geopandas as gpd
+import matplotlib.axes
 import matplotlib.pyplot as plt
 
 # SOEP l11101 (Federal State) mapping
@@ -59,13 +60,55 @@ SHORT_NAMES = {
 }
 
 
-def load_config():
+def load_config() -> dict:
+    """
+    Load the project configuration from ``config.json``.
+
+    Returns
+    -------
+    dict
+        Parsed JSON configuration located three directories above this
+        file (project root).
+    """
     config_path = Path(__file__).parent.parent.parent / "config.json"
     with open(config_path) as f:
         return json.load(f)
 
 
-def get_period_stats(df, years, treatment_var, state_var):
+def get_period_stats(
+    df: pd.DataFrame,
+    years: list[int],
+    treatment_var: str,
+    state_var: str,
+) -> pd.DataFrame:
+    """
+    Compute the share of "Yes" respondents per federal state for given years.
+
+    Only respondents who answered 1 ("Yes") or 2 ("No") are included in
+    the denominator — value 3 ("Not possible") is excluded, matching the
+    binary willingness measure used in analysis.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Master dataframe with ``syear``, ``treatment_var``, and
+        ``state_var`` columns.
+    years : list[int]
+        Survey years to include in the aggregation.
+    treatment_var : str
+        Column name of the willingness-to-WFH variable (typically
+        ``"plb0097"``).
+    state_var : str
+        Column name of the federal state identifier (typically
+        ``"l11101"``).
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with columns ``[state_var, treatment_var, "state_name"]``
+        where ``treatment_var`` holds the percentage of "Yes" answers among
+        remote-capable respondents in each state.
+    """
     period_df = df[df["syear"].isin(years)].copy()
     capable_df = period_df[period_df[treatment_var].isin([1, 2])]
     stats = (
@@ -77,7 +120,38 @@ def get_period_stats(df, years, treatment_var, state_var):
     return stats
 
 
-def plot_on_ax(ax, merged, treatment_var, title, vmin=40, vmax=90):
+def plot_on_ax(
+    ax: matplotlib.axes.Axes,
+    merged: gpd.GeoDataFrame,
+    treatment_var: str,
+    title: str,
+    vmin: float = 40,
+    vmax: float = 90,
+) -> None:
+    """
+    Draw a greyscale choropleth map of state-level willingness-to-WFH shares.
+
+    State labels use short abbreviations (e.g. "NRW") positioned at each
+    state's centroid with configurable offsets for small or enclave states.
+    Label colour switches to white for darker-shaded states.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        Axes object to draw onto.
+    merged : gpd.GeoDataFrame
+        GeoDataFrame with geometry and a ``treatment_var`` column
+        containing the percentage share per state, plus a ``"name"``
+        column matching ``SHORT_NAMES`` keys.
+    treatment_var : str
+        Column name in ``merged`` that holds the percentage values to map.
+    title : str
+        Map title displayed above the axes.
+    vmin : float, optional
+        Minimum value of the colour scale. Defaults to 40.
+    vmax : float, optional
+        Maximum value of the colour scale. Defaults to 90.
+    """
     merged.plot(
         column=treatment_var,
         ax=ax,
@@ -115,7 +189,8 @@ def plot_on_ax(ax, merged, treatment_var, title, vmin=40, vmax=90):
     ax.set_axis_off()
 
 
-def main():
+def main() -> None:
+    """Load master data, fetch state boundaries, and save the willingness map."""
     config = load_config()
     master_path = Path("output/data/master.parquet")
     if not master_path.exists():
@@ -123,15 +198,11 @@ def main():
         return
 
     df = pd.read_parquet(master_path)
-    treatment_var = config["study"]["soep_outcome_var"].lower()
+    treatment_var = config["study"]["outcome_willingness"].lower()
     state_var = "l11101"
+    study_years = config["study"]["study_years"]
 
-    # 1. Prepare Data for both periods
-    pre_years = config["study"]["pre_covid_years"]
-    post_years = config["study"]["post_covid_years"]
-
-    pre_stats = get_period_stats(df, pre_years, treatment_var, state_var)
-    post_stats = get_period_stats(df, post_years, treatment_var, state_var)
+    period_stats = get_period_stats(df, study_years, treatment_var, state_var)
 
     # 2. Load Geometry
     geojson_url = "https://raw.githubusercontent.com/isellsoap/deutschlandGeoJSON/main/2_bundeslaender/4_niedrig.geo.json"
@@ -139,38 +210,26 @@ def main():
     gdf = gpd.read_file(geojson_url)
 
     # 3. Merge
-    pre_merged = gdf.merge(pre_stats, left_on="name", right_on="state_name")
-    post_merged = gdf.merge(post_stats, left_on="name", right_on="state_name")
+    merged = gdf.merge(period_stats, left_on="name", right_on="state_name")
 
-    # 4. APA Style Plotting (Side-by-Side)
+    # 4. APA Style Plotting
     plt.rcParams["font.family"] = "sans-serif"
     plt.rcParams["font.sans-serif"] = ["Arial", "Helvetica", "DejaVu Sans"]
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 8))
+    fig, ax1 = plt.subplots(1, 1, figsize=(8, 8))
 
     vmin, vmax = 40, 90
     plot_on_ax(
         ax1,
-        pre_merged,
+        merged,
         treatment_var,
-        f"Regime 1 Average\n({min(pre_years)}–{max(pre_years)})",
-        vmin,
-        vmax,
-    )
-    plot_on_ax(
-        ax2,
-        post_merged,
-        treatment_var,
-        f"Regime 2 Average\n({min(post_years)}–{max(post_years)})",
+        f"Average Willingness to WFH\n({min(study_years)}–{max(study_years)})",
         vmin,
         vmax,
     )
 
-    # Add shared colorbar
     sm = plt.cm.ScalarMappable(cmap="Greys", norm=plt.Normalize(vmin=vmin, vmax=vmax))
-    cbar = fig.colorbar(
-        sm, ax=[ax1, ax2], orientation="horizontal", pad=0.1, shrink=0.6
-    )
+    cbar = fig.colorbar(sm, ax=ax1, orientation="horizontal", pad=0.05, shrink=0.7)
     cbar.set_label(
         "Willingness to Work Remotely (Share of 'Yes' among Remote-Capable Jobs, %)",
         fontsize=10,
@@ -178,10 +237,10 @@ def main():
 
     figures_dir = Path(config["output"]["figures_dir"])
     figures_dir.mkdir(parents=True, exist_ok=True)
-    out_path = figures_dir / "map_comparison_pre_post.png"
+    out_path = figures_dir / "map_willingness.png"
 
     plt.savefig(out_path, dpi=300, bbox_inches="tight")
-    print(f"Comparison map saved to {out_path}")
+    print(f"Map saved to {out_path}")
 
 
 if __name__ == "__main__":
