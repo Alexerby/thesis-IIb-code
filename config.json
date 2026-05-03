@@ -38,11 +38,11 @@
     },
     {
       "key": "controls_demo",
-      "label": "Demographic Characteristics (Time-Invariant)"
+      "label": "Demographic Characteristics"
     },
     {
       "key": "controls_socio",
-      "label": "Socioeconomic Determinants (Time-Varying)"
+      "label": "Socioeconomic Determinants"
     },
     {
       "key": "controls_other",
@@ -61,6 +61,22 @@
         }
       ],
       "compute": "syear - gebjahr"
+    },
+    {
+      "name": "sqm_per_head",
+      "label": "Living space pp.",
+      "scale": "sqm/person",
+      "source_vars": [
+        {
+          "name": "hlf0019_h",
+          "dataset": "hl"
+        },
+        {
+          "name": "d11106",
+          "dataset": "pequiv"
+        }
+      ],
+      "compute": "hlf0019_h / d11106"
     }
   ],
   "nace_sectors": [
@@ -110,14 +126,14 @@
         "name": "pid",
         "dataset": "ppathl",
         "label": "Person ID",
-        "scale": "ID",
+        "scale": "UID",
         "type": "id"
       },
       {
         "name": "hid",
         "dataset": "ppathl",
         "label": "Household ID",
-        "scale": "ID",
+        "scale": "UID",
         "type": "id"
       }
     ],
@@ -126,18 +142,24 @@
         "name": "plb0097",
         "dataset": "pl",
         "label": "Willing to WFH",
-        "scale": "1=Yes, 2=No, 3=Not possible",
+        "scale": "0=No, 1=Yes, 3=Not possible",
         "type": "categorical"
       },
       {
         "name": "plb0095_v1",
         "dataset": "pl",
         "label": "Actually WFH",
-        "scale": "1=Yes, 2=No",
+        "scale": "0=No, 1=Yes",
         "type": "categorical"
       }
     ],
     "controls_demo": [
+      {
+        "name": "age",
+        "dataset": "derived",
+        "label": "Age",
+        "scale": "years"
+      },
       {
         "name": "sex",
         "dataset": "ppathl",
@@ -151,15 +173,15 @@
         "label": "Migr. Background",
         "scale": "1=None, 2=Direct, 3=Indirect",
         "type": "categorical"
+      },
+      {
+        "name": "d11107",
+        "dataset": "pequiv",
+        "label": "Num. children in HH",
+        "scale": "count"
       }
     ],
     "controls_socio": [
-      {
-        "name": "age",
-        "dataset": "derived",
-        "label": "Age",
-        "scale": "years"
-      },
       {
         "name": "i11102",
         "dataset": "pequiv",
@@ -173,12 +195,6 @@
         "scale": "1--6"
       },
       {
-        "name": "d11107",
-        "dataset": "pequiv",
-        "label": "Num. children in HH",
-        "scale": "count"
-      },
-      {
         "name": "l11101",
         "dataset": "pequiv",
         "label": "Federal State",
@@ -186,11 +202,10 @@
         "type": "categorical"
       },
       {
-        "name": "hlf0019_h",
-        "dataset": "hl",
-        "label": "Living space",
-        "scale": "sqm",
-        "note": "Household-level (hl), merged on (hid, syear). SOEP pre-harmonized across waves."
+        "name": "sqm_per_head",
+        "dataset": "derived",
+        "label": "Living space per person",
+        "scale": "sqm/person"
       }
     ],
     "controls_other": [
@@ -218,18 +233,6 @@
         "dataset": "pl",
         "label": "Overtime",
         "scale": "0/1"
-      },
-      {
-        "name": "p_nace",
-        "dataset": "pl",
-        "label": "NACE Rev.1 (source)",
-        "scale": "NACE Rev.1"
-      },
-      {
-        "name": "p_nace2",
-        "dataset": "pl",
-        "label": "NACE Rev.2 (source)",
-        "scale": "NACE Rev.2"
       },
       {
         "name": "sector",

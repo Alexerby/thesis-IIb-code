@@ -8,30 +8,8 @@ from pathlib import Path
 import pandas as pd
 
 from src.data.io import load_config
-from src.data.utils import clean_series, study_period_label
+from src.data.utils import clean_series, load_master, study_period_label
 
-MASTER_PATH = Path("output/data/master.parquet")
-
-
-def load_master() -> pd.DataFrame:
-    """
-    Load the master analysis dataframe from Parquet.
-
-    Returns
-    -------
-    pd.DataFrame
-        Master dataframe produced by ``build_dataframe.py``.
-
-    Raises
-    ------
-    FileNotFoundError
-        If the master Parquet file does not exist.
-    """
-    if not MASTER_PATH.exists():
-        raise FileNotFoundError(
-            f"{MASTER_PATH} not found — run build_dataframe.py first"
-        )
-    return pd.read_parquet(MASTER_PATH)
 
 
 def compute_stats(df: pd.DataFrame, varname: str, vtype: str) -> dict:
@@ -80,7 +58,7 @@ def compute_stats(df: pd.DataFrame, varname: str, vtype: str) -> dict:
         all_cats = sorted(s_all.dropna().unique())
         if len(all_cats) <= 5:
             c = s_all.value_counts(normalize=True).reindex(all_cats, fill_value=0)
-            res["dist"] = " / ".join(f"{v * 100:.0f}" for v in c)
+            res["dist"] = " / ".join(f"{int(cat)}:{v * 100:.0f}\\%" for cat, v in zip(all_cats, c))
         else:
             res["dist"] = "--"
 
@@ -127,6 +105,19 @@ def build_main_table(
         Complete LaTeX source for the table, ready to ``\\input`` into a
         document.
     """
+    # Pre-scan: collect unique note texts from vdefs and assign footnote numbers.
+    # Fixed notes are: Note 1 (categorical dist), Note 2 if harmonized vars exist.
+    fixed_note_count = 1 + (1 if harmonized else 0)
+    note_text_to_num: dict[str, int] = {}
+    var_note_num: dict[str, int] = {}
+    for panel in panels:
+        for vdef in var_meta.get(panel["key"], []):
+            note = vdef.get("note", "")
+            if note:
+                if note not in note_text_to_num:
+                    note_text_to_num[note] = fixed_note_count + len(note_text_to_num) + 1
+                var_note_num[vdef["name"]] = note_text_to_num[note]
+
     col_spec = r"l p{3.5cm} p{2.0cm} rrr"
     lines = [
         r"\begin{table}[htbp]",
@@ -159,6 +150,7 @@ def build_main_table(
             vtype = vdef.get("type", "continuous").lower()
             tex_name = name.replace("_", r"\_")
             dagger = r"$^\dagger$" if name in harmonized else ""
+            note_marker = f"$^{{{var_note_num[name]}}}$" if name in var_note_num else ""
 
             if vtype == "id":
                 mean_sd = "-- & --"
@@ -169,7 +161,7 @@ def build_main_table(
                 mean_sd = f"{s['mean']:.2f} & {s['sd']:.2f}"
 
             lines.append(
-                rf"\texttt{{{tex_name}}}{dagger} & {vdef['label']} & {scale} & "
+                rf"\texttt{{{tex_name}}}{dagger}{note_marker} & {vdef['label']} & {scale} & "
                 rf"{mean_sd} & {s['n']:,} \\"
             )
         lines.append(r"\addlinespace")
@@ -179,9 +171,14 @@ def build_main_table(
     ]
     if harmonized:
         notes.append(r"$^\dagger$Manually harmonized from multiple survey versions.")
+    for note_text, note_num in sorted(note_text_to_num.items(), key=lambda x: x[1]):
+        # Escape underscores in the note text
+        safe_note_text = note_text.replace("_", r"\_")
+        notes.append(f"$^{{{note_num}}}${safe_note_text}")
 
     lines += [
         r"\bottomrule",
+        r"\vspace{2pt}",
         r"\end{tabular}%",
         r"}",
         r"\smallskip",
@@ -220,6 +217,17 @@ def build_appendix_table(
     str
         Complete LaTeX source for the appendix table.
     """
+    # Pre-scan: collect variable notes (same logic as main table, no fixed harmonized note here)
+    note_text_to_num: dict[str, int] = {}
+    var_note_num: dict[str, int] = {}
+    for panel in panels:
+        for vdef in var_meta.get(panel["key"], []):
+            note = vdef.get("note", "")
+            if note:
+                if note not in note_text_to_num:
+                    note_text_to_num[note] = 2 + len(note_text_to_num)
+                var_note_num[vdef["name"]] = note_text_to_num[note]
+
     year_cols = sorted(years)
     col_spec = r"l p{3.5cm} p{2.0cm}" + "r" * len(year_cols) + "rrr"
     year_header = " & ".join(str(y) for y in year_cols)
@@ -256,6 +264,7 @@ def build_appendix_table(
             scale = vdef.get("scale", "")
             vtype = vdef.get("type", "continuous").lower()
             tex_name = name.replace("_", r"\_")
+            note_marker = f"$^{{{var_note_num[name]}}}$" if name in var_note_num else ""
 
             if vtype == "id":
                 stats_cells = "& -- & --"
@@ -265,9 +274,15 @@ def build_appendix_table(
                 stats_cells = rf"& {s['mean']:.3f} & {s['sd']:.3f}"
 
             lines.append(
-                rf"\texttt{{{tex_name}}} & {vdef['label']} & {scale} & {n_cells} & {s['n']:,} {stats_cells} \\"
+                rf"\texttt{{{tex_name}}}{note_marker} & {vdef['label']} & {scale} & {n_cells} & {s['n']:,} {stats_cells} \\"
             )
         lines.append(r"\addlinespace")
+
+    app_notes = [r"For categorical variables with $\le 5$ categories, the `Mean' column shows the percentage distribution."]
+    for note_text, note_num in sorted(note_text_to_num.items(), key=lambda x: x[1]):
+        # Escape underscores in the note text
+        safe_note_text = note_text.replace("_", r"\_")
+        app_notes.append(f"$^{{{note_num}}}${safe_note_text}")
 
     lines += [
         r"\bottomrule",
@@ -275,7 +290,7 @@ def build_appendix_table(
         r"}",
         r"\smallskip",
         r"\parbox{\linewidth}{",
-        r"\footnotesize Note 1: For categorical variables with $\le 5$ categories, the 'Mean' column shows the percentage distribution. \\",
+        "\n".join(rf"\footnotesize Note {i+1}: {t} \\" for i, t in enumerate(app_notes)),
         r"}",
         r"\end{table}",
     ]

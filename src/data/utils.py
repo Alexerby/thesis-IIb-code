@@ -1,4 +1,6 @@
+from pathlib import Path
 import pandas as pd
+
 
 SOEP_MISSING = {-8, -7, -6, -5, -4, -3, -2, -1}
 
@@ -44,3 +46,27 @@ def study_period_label(config: dict, latex: bool = False) -> str:
     dash = "--" if latex else "–"
     years = config["study"]["study_years"]
     return f"{min(years)}{dash}{max(years)}"
+
+
+MASTER_PATH = Path("output/data/master.parquet")
+
+
+def load_master() -> pd.DataFrame:
+    """
+    Load the master analysis dataframe from Parquet.
+
+    Returns
+    -------
+    pd.DataFrame
+        Master dataframe produced by ``build_dataframe.py``.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the master Parquet file does not exist.
+    """
+    if not MASTER_PATH.exists():
+        raise FileNotFoundError(
+            f"{MASTER_PATH} not found — run build_dataframe.py first"
+        )
+    return pd.read_parquet(MASTER_PATH)

@@ -1,0 +1,55 @@
+\begin{table}[htbp]
+\renewcommand{\arraystretch}{1.1}
+\footnotesize
+\centering
+\caption{Willingness to Work from Home: Pooled Logit and Probit}
+\label{tab:pooled_bcm}
+\begin{tabular}{lcccc}
+\toprule
+  & \multicolumn{2}{c}{\textbf{Logit}} & \multicolumn{2}{c}{\textbf{Probit}} \\
+  \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+  & (1) & (2) & (3) & (4) \\
+\midrule
+  \addlinespace
+  \multicolumn{5}{l}{\textbf{Demographics}} \\
+    Age & $-0.0090^{***}$ & $-0.0089^{***}$ & $-0.0055^{***}$ & $-0.0055^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0027)$ & $(0.0027)$ & $(0.0016)$ & $(0.0016)$ \\[2pt]
+    Female & $0.1127^{**}$ & $0.1288^{**}$ & $0.0702^{**}$ & $0.0806^{**}$ \\
+    \multicolumn{1}{l}{} & $(0.0555)$ & $(0.0577)$ & $(0.0340)$ & $(0.0354)$ \\[2pt]
+    Direct Migr. Background & $-0.5946^{***}$ & $-0.5861^{***}$ & $-0.3691^{***}$ & $-0.3635^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0844)$ & $(0.0852)$ & $(0.0525)$ & $(0.0529)$ \\[2pt]
+    Indirect Migr. Background & $0.0489$ & $0.0334$ & $0.0307$ & $0.0208$ \\
+    \multicolumn{1}{l}{} & $(0.1235)$ & $(0.1239)$ & $(0.0755)$ & $(0.0757)$ \\[2pt]
+  \addlinespace
+  \multicolumn{5}{l}{\textbf{Socioeconomic}} \\
+    Education (ISCED-97) & $0.1522^{***}$ & $0.1335^{***}$ & $0.0933^{***}$ & $0.0818^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0184)$ & $(0.0191)$ & $(0.0113)$ & $(0.0117)$ \\[2pt]
+    HH Post-Gov. Income$^\dagger$ & $0.2962^{***}$ & $0.2538^{***}$ & $0.1786^{***}$ & $0.1528^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0568)$ & $(0.0572)$ & $(0.0345)$ & $(0.0348)$ \\[2pt]
+    Has Children in HH & $-0.1495^{***}$ & $-0.1286^{**}$ & $-0.0915^{***}$ & $-0.0781^{**}$ \\
+    \multicolumn{1}{l}{} & $(0.0548)$ & $(0.0552)$ & $(0.0335)$ & $(0.0337)$ \\[2pt]
+    Living Space (sqm) & $0.0004$ & $0.0006$ & $0.0003$ & $0.0004$ \\
+    \multicolumn{1}{l}{} & $(0.0007)$ & $(0.0007)$ & $(0.0004)$ & $(0.0004)$ \\[2pt]
+  \addlinespace
+  \multicolumn{5}{l}{\textbf{Labour}} \\
+    Annual Work Hours (per 100h) & $0.0057$ & $0.0066^{*}$ & $0.0036$ & $0.0042^{*}$ \\
+    \multicolumn{1}{l}{} & $(0.0036)$ & $(0.0037)$ & $(0.0022)$ & $(0.0022)$ \\[2pt]
+    Works Overtime & $0.4422^{***}$ & $0.4512^{***}$ & $0.2730^{***}$ & $0.2779^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0575)$ & $(0.0579)$ & $(0.0356)$ & $(0.0358)$ \\[2pt]
+    Work Satisfaction & $-0.0822^{***}$ & $-0.0808^{***}$ & $-0.0502^{***}$ & $-0.0492^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0126)$ & $(0.0127)$ & $(0.0077)$ & $(0.0077)$ \\[2pt]
+  \midrule
+  Sector FE & No & Yes & No & Yes \\
+  \midrule
+  $N$ & 7,337 & 7,337 & 7,337 & 7,337 \\
+  McFadden $R^2$ & 0.0402 & 0.0463 & 0.0401 & 0.0462 \\
+  Log-Likelihood & -4686.9 & -4657.2 & -4687.3 & -4657.8 \\
+  \bottomrule
+\end{tabular}
+\smallskip
+\parbox{\linewidth}{
+\footnotesize Standard errors in parentheses. *** $p<0.01$, ** $p<0.05$, * $p<0.1$. Constant included but not reported. \\
+\footnotesize $^\dagger$ Variable entered as natural logarithm. \\
+\footnotesize Sector fixed effects: NACE sectors 1--15 (reference: Agriculture).
+}
+\end{table}

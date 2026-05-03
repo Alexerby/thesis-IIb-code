@@ -1,4 +1,8 @@
+from typing import Any
 import pandas as pd
+
+# types
+Recodes = dict[str, dict[Any, Any]]
 
 
 def merge_datasets(frames: list[pd.DataFrame]) -> pd.DataFrame:
@@ -119,4 +123,54 @@ def compute_sector(df: pd.DataFrame, config: dict) -> pd.DataFrame:
     df["sector"] = sector
     df = df.drop(columns=[c for c in ["p_nace", "p_nace2"] if c in df.columns])
     print(f"  {sector.notna().sum():,} non-null values across {sector.nunique()} sectors")
+    return df
+
+
+def compute_sqm_per_head(df: pd.DataFrame) -> pd.DataFrame:
+    """Derive living space per person by dividing hlf0019_h by d11106."""
+    print("Computing sqm per head ...")
+    hh_size = df["d11106"].where(df["d11106"] > 0)
+    df["sqm_per_head"] = df["hlf0019_h"] / hh_size
+    return df
+
+
+def compute_migback_dummies(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Replace the ``migback`` column with two binary dummy columns.
+
+    Reference category is 1 (no migration background). The source column
+    is dropped after the dummies are created.
+    """
+    print("Computing migration background dummies ...")
+    df["migback_direct"]   = df["migback"].eq(2).astype("Int8")
+    df["migback_indirect"] = df["migback"].eq(3).astype("Int8")
+    df = df.drop(columns=["migback"])
+    return df
+
+
+def recode_variables(df: pd.DataFrame, recodes: Recodes) -> pd.DataFrame:
+    """
+    Apply value remappings to one or more columns in a single pass.
+
+    Each entry in ``recodes`` maps a column name to a ``{old: new}`` dict
+    that is forwarded to ``pd.Series.replace``. Columns absent from the
+    dataframe are silently skipped, so you can declare recodes for optional
+    variables without guard clauses.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Master dataframe after merging.
+    recodes : dict[str, dict[Any, Any]]
+        Mapping of ``{column_name: {old_value: new_value}}``. Values of
+        ``None`` become ``NaN`` in the output column.
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with the specified values replaced in-place.
+    """
+    for col, mapping in recodes.items():
+        if col in df.columns:
+            df[col] = df[col].replace(mapping)
     return df

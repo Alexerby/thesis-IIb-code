@@ -80,6 +80,10 @@ def expected_parquet_columns(config: dict, dataset: str) -> set[str]:
         for vdef in panel:
             if vdef["dataset"] == dataset and vdef["name"] not in harmonized_names:
                 direct.add(vdef["name"])
+    for ddef in config.get("derived", []):
+        for src in ddef.get("source_vars", []):
+            if src["dataset"] == dataset:
+                direct.add(src["name"])
     id_col = "hid" if dataset in HOUSEHOLD_DATASETS else "pid"
     return {id_col, "syear"} | direct | harmonized_for_dataset
 

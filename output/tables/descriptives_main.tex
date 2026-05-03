@@ -10,38 +10,39 @@
 Variable & Label & Scale & Mean & SD & $N$ \\
 \midrule
 \multicolumn{6}{l}{\textit{Identifiers}} \\
-\texttt{pid} & Person ID & ID & -- & -- & 285,363 \\
-\texttt{hid} & Household ID & ID & -- & -- & 283,778 \\
+\texttt{pid} & Person ID & UID & -- & -- & 285,363 \\
+\texttt{hid} & Household ID & UID & -- & -- & 283,778 \\
 \addlinespace
 \multicolumn{6}{l}{\textit{Primary Outcome}} \\
-\texttt{plb0097} & Willing to WFH & 1=Yes, 2=No, 3=Not possible & \footnotesize 22 / 12 / 66 & -- & 40,935 \\
-\texttt{plb0095\_v1} & Actually WFH & 1=Yes, 2=No & \footnotesize 23 / 77 & -- & 46,663 \\
+\texttt{plb0097} & Willing to WFH & 0=No, 1=Yes, 3=Not possible & \footnotesize 0:12\% / 1:22\% / 3:66\% & -- & 40,935 \\
+\texttt{plb0095\_v1} & Actually WFH & 0=No, 1=Yes & \footnotesize 0:77\% / 1:23\% & -- & 46,663 \\
 \addlinespace
-\multicolumn{6}{l}{\textit{Demographic Characteristics (Time-Invariant)}} \\
-\texttt{sex} & Gender & 1=M, 2=F & \footnotesize 48 / 52 & -- & 285,338 \\
-\texttt{migback} & Migr. Background & 1=None, 2=Direct, 3=Indirect & \footnotesize 77 / 12 / 11 & -- & 285,363 \\
-\addlinespace
-\multicolumn{6}{l}{\textit{Socioeconomic Determinants (Time-Varying)}} \\
+\multicolumn{6}{l}{\textit{Demographic Characteristics}} \\
 \texttt{age} & Age & years & 36.28 & 22.97 & 283,937 \\
+\texttt{sex} & Gender & 1=M, 2=F & \footnotesize 0:48\% / 1:52\% & -- & 285,338 \\
+\texttt{migback} & Migr. Background & 1=None, 2=Direct, 3=Indirect & \footnotesize 1:77\% / 2:12\% / 3:11\% & -- & 285,363 \\
+\texttt{d11107} & Num. children in HH & count & 1.22 & 1.32 & 245,702 \\
+\addlinespace
+\multicolumn{6}{l}{\textit{Socioeconomic Determinants}} \\
 \texttt{i11102} & HH Post-Gov Income & EUR & 40633.48 & 29289.60 & 245,702 \\
 \texttt{pgisced97} & Educ. (ISCED-97) & 1--6 & 3.63 & 1.55 & 162,544 \\
-\texttt{d11107} & Num. children in HH & count & 1.22 & 1.32 & 245,702 \\
 \texttt{l11101} & Federal State & 1--16 & \footnotesize -- & -- & 245,702 \\
-\texttt{hlf0019\_h} & Living space & sqm & 112.34 & 48.37 & 246,519 \\
+\texttt{sqm\_per\_head} & Living space per person & sqm/person & 39.43 & 22.61 & 244,985 \\
 \addlinespace
 \multicolumn{6}{l}{\textit{Labour Determinants}} \\
 \texttt{plh0173} & Work satisfaction & 0--10 & 7.08 & 2.15 & 98,209 \\
 \texttt{pglfs} & LF Status & 1--13 & \footnotesize -- & -- & 165,506 \\
 \texttt{e11101} & Annual work hrs & hours & 1006.40 & 1088.34 & 181,894 \\
 \texttt{plb0193\_h}$^\dagger$ & Overtime & 0/1 & 0.69 & 0.46 & 86,609 \\
-\texttt{sector} & Industry Sector & 1--15 & \footnotesize -- & -- & 61,166 \\
 \addlinespace
 \bottomrule
+\vspace{2pt}
 \end{tabular}%
 }
 \smallskip
 \parbox{\linewidth}{
 \footnotesize Note 1: For categorical variables with $\le 5$ categories, the `Mean' column shows the percentage distribution across categories. \\
 \footnotesize Note 2: $^\dagger$Manually harmonized from multiple survey versions. \\
+\footnotesize Note 3: $^{3}$Derived from p\_nace (NACE Rev.1) and p\_nace2 (NACE Rev.2) via nace\_sectors mapping. See compute\_sector() in transformers.py. \\
 }
 \end{table}

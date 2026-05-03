@@ -10,37 +10,37 @@
 Variable & Label & Scale & 2009 & 2010 & 2011 & 2012 & 2013 & 2014 & $N$ & Mean & SD \\
 \midrule
 \multicolumn{12}{l}{\textit{Identifiers}} \\
-\texttt{pid} & Person ID & ID & 31,642 & 45,977 & 50,329 & 50,120 & 55,611 & 51,684 & 285,363 & -- & -- \\
-\texttt{hid} & Household ID & ID & 30,497 & 45,842 & 50,274 & 50,047 & 55,502 & 51,616 & 283,778 & -- & -- \\
+\texttt{pid} & Person ID & UID & 31,642 & 45,977 & 50,329 & 50,120 & 55,611 & 51,684 & 285,363 & -- & -- \\
+\texttt{hid} & Household ID & UID & 30,497 & 45,842 & 50,274 & 50,047 & 55,502 & 51,616 & 283,778 & -- & -- \\
 \addlinespace
 \multicolumn{12}{l}{\textit{Primary Outcome}} \\
-\texttt{plb0097} & Willing to WFH & 1=Yes, 2=No, 3=Not possible & 11,372 & 3,804 & 4,042 & 3,870 & 3,908 & 13,939 & 40,935 & \footnotesize 22 / 12 / 66 & -- \\
-\texttt{plb0095\_v1} & Actually WFH & 1=Yes, 2=No & 11,764 & 4,919 & 5,358 & 5,162 & 5,087 & 14,373 & 46,663 & \footnotesize 23 / 77 & -- \\
+\texttt{plb0097} & Willing to WFH & 0=No, 1=Yes, 3=Not possible & 11,372 & 3,804 & 4,042 & 3,870 & 3,908 & 13,939 & 40,935 & \footnotesize 0:12\% / 1:22\% / 3:66\% & -- \\
+\texttt{plb0095\_v1} & Actually WFH & 0=No, 1=Yes & 11,764 & 4,919 & 5,358 & 5,162 & 5,087 & 14,373 & 46,663 & \footnotesize 0:77\% / 1:23\% & -- \\
 \addlinespace
-\multicolumn{12}{l}{\textit{Demographic Characteristics (Time-Invariant)}} \\
-\texttt{sex} & Gender & 1=M, 2=F & 31,642 & 45,977 & 50,326 & 50,117 & 55,604 & 51,672 & 285,338 & \footnotesize 48 / 52 & -- \\
-\texttt{migback} & Migr. Background & 1=None, 2=Direct, 3=Indirect & 31,642 & 45,977 & 50,329 & 50,120 & 55,611 & 51,684 & 285,363 & \footnotesize 77 / 12 / 11 & -- \\
-\addlinespace
-\multicolumn{12}{l}{\textit{Socioeconomic Determinants (Time-Varying)}} \\
+\multicolumn{12}{l}{\textit{Demographic Characteristics}} \\
 \texttt{age} & Age & years & 31,427 & 45,735 & 50,108 & 49,898 & 55,360 & 51,409 & 283,937 & 36.279 & 22.966 \\
+\texttt{sex} & Gender & 1=M, 2=F & 31,642 & 45,977 & 50,326 & 50,117 & 55,604 & 51,672 & 285,338 & \footnotesize 0:48\% / 1:52\% & -- \\
+\texttt{migback} & Migr. Background & 1=None, 2=Direct, 3=Indirect & 31,642 & 45,977 & 50,329 & 50,120 & 55,611 & 51,684 & 285,363 & \footnotesize 1:77\% / 2:12\% / 3:11\% & -- \\
+\texttt{d11107} & Num. children in HH & count & 27,075 & 41,440 & 44,425 & 42,811 & 48,069 & 41,882 & 245,702 & 1.224 & 1.315 \\
+\addlinespace
+\multicolumn{12}{l}{\textit{Socioeconomic Determinants}} \\
 \texttt{i11102} & HH Post-Gov Income & EUR & 27,075 & 41,440 & 44,425 & 42,811 & 48,069 & 41,882 & 245,702 & 40633.481 & 29289.603 \\
 \texttt{pgisced97} & Educ. (ISCED-97) & 1--6 & 20,679 & 26,773 & 28,666 & 28,078 & 30,952 & 27,396 & 162,544 & 3.629 & 1.547 \\
-\texttt{d11107} & Num. children in HH & count & 27,075 & 41,440 & 44,425 & 42,811 & 48,069 & 41,882 & 245,702 & 1.224 & 1.315 \\
 \texttt{l11101} & Federal State & 1--16 & 27,075 & 41,440 & 44,425 & 42,811 & 48,069 & 41,882 & 245,702 & \footnotesize -- & -- \\
-\texttt{hlf0019\_h} & Living space & sqm & 27,177 & 41,505 & 44,558 & 43,013 & 48,186 & 42,080 & 246,519 & 112.340 & 48.371 \\
+\texttt{sqm\_per\_head} & Living space per person & sqm/person & 26,959 & 41,287 & 44,341 & 42,755 & 47,916 & 41,727 & 244,985 & 39.429 & 22.605 \\
 \addlinespace
 \multicolumn{12}{l}{\textit{Labour Determinants}} \\
 \texttt{plh0173} & Work satisfaction & 0--10 & 12,323 & 16,095 & 16,459 & 16,624 & 19,386 & 17,322 & 98,209 & 7.079 & 2.148 \\
 \texttt{pglfs} & LF Status & 1--13 & 21,035 & 27,123 & 29,264 & 28,519 & 31,523 & 28,042 & 165,506 & \footnotesize -- & -- \\
 \texttt{e11101} & Annual work hrs & hours & 22,789 & 29,415 & 31,819 & 31,217 & 35,340 & 31,314 & 181,894 & 1006.401 & 1088.344 \\
 \texttt{plb0193\_h} & Overtime & 0/1 & 10,398 & 13,829 & 15,129 & 14,963 & 17,124 & 15,166 & 86,609 & 0.685 & 0.464 \\
-\texttt{sector} & Industry Sector & 1--15 & 11,266 & 6,483 & 13,376 & 8,006 & 18,508 & 3,527 & 61,166 & \footnotesize -- & -- \\
 \addlinespace
 \bottomrule
 \end{tabular}%
 }
 \smallskip
 \parbox{\linewidth}{
-\footnotesize Note 1: For categorical variables with $\le 5$ categories, the 'Mean' column shows the percentage distribution. \\
+\footnotesize Note 1: For categorical variables with $\le 5$ categories, the `Mean' column shows the percentage distribution. \\
+\footnotesize Note 2: $^{2}$Derived from p\_nace (NACE Rev.1) and p\_nace2 (NACE Rev.2) via nace\_sectors mapping. See compute\_sector() in transformers.py. \\
 }
 \end{table}

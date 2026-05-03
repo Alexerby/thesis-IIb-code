@@ -10,9 +10,17 @@ in extract.py, not here. Re-run extract.py when you add new harmonized variables
 """
 
 from src.data.io import load_config, load_parquet_datasets, save_master
-from src.data.transformers import merge_datasets, merge_household_data, compute_age, compute_sector
+from src.data.transformers import merge_datasets, merge_household_data, compute_age, compute_sector, compute_sqm_per_head, recode_variables
 from src.data.filters import filter_study_years
 from src.data.extract import ensure_datasets
+
+# Value remappings applied after merging. {column: {old: new}}
+# None as a new value becomes NaN. Add entries here as needed.
+RECODES = {
+    "plb0095_v1": {2: 0},   # actually WFH: 1=Yes, 0=No (was 2)
+    "plb0097":    {2: 0},   # willing to WFH: 1=Yes, 0=No (was 2), 3=Not possible
+    "sex":        {1: 0, 2: 1},  # 0=Male, 1=Female
+}
 
 
 def main() -> None:
@@ -27,8 +35,9 @@ def main() -> None:
     4. Left-join household data on ``(hid, syear)``.
     5. Derive ``age`` from birth year.
     6. Map NACE codes to a common ``sector`` identifier.
-    7. Filter rows to the configured study years.
-    8. Save the master dataframe to Parquet and Excel.
+    7. Recode variable values (see ``RECODES``).
+    8. Filter rows to the configured study years.
+    9. Save the master dataframe to Parquet and Excel.
     """
     config = load_config()
 
@@ -40,10 +49,12 @@ def main() -> None:
     (
         merge_datasets(person_frames)
         .pipe(merge_household_data,  frames=household_frames)
+        .pipe(compute_sqm_per_head)
         .pipe(compute_age)
         .pipe(compute_sector, config=config)
+        .pipe(recode_variables, recodes=RECODES)
         .pipe(filter_study_years, config=config)
-        .pipe(save_master)
+        .pipe(save_master, config=config)
     )
 
     print("\nPipeline completed successfully.")
