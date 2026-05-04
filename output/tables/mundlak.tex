@@ -1,0 +1,72 @@
+\begin{table}[htbp]
+\renewcommand{\arraystretch}{1.1}
+\footnotesize
+\centering
+\caption{Willingness to Work from Home: Correlated Random Effects Probit (Mundlak)}
+\label{tab:mundlak}
+\begin{tabular}{lc}
+\toprule
+  & (1) \\
+\midrule
+  \addlinespace
+  \multicolumn{2}{l}{\textbf{Demographics}} \\
+    Age & $-0.0138^{*}$ \\
+    \multicolumn{1}{l}{} & $(0.0077)$ \\[2pt]
+    Female & $0.0369$ \\
+    \multicolumn{1}{l}{} & $(0.0308)$ \\[2pt]
+    Direct Migr. Background & $-0.3187^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0483)$ \\[2pt]
+    Indirect Migr. Background & $0.0101$ \\
+    \multicolumn{1}{l}{} & $(0.0705)$ \\[2pt]
+  \addlinespace
+  \multicolumn{2}{l}{\textbf{Socioeconomic}} \\
+    Education (ISCED-97) & $0.0329$ \\
+    \multicolumn{1}{l}{} & $(0.0653)$ \\[2pt]
+    HH Post-Gov. Income$^\dagger$ & $0.1483^{*}$ \\
+    \multicolumn{1}{l}{} & $(0.0781)$ \\[2pt]
+    Has Children in HH & $0.1104$ \\
+    \multicolumn{1}{l}{} & $(0.0833)$ \\[2pt]
+    Living Space (sqm/person) & $-0.0009$ \\
+    \multicolumn{1}{l}{} & $(0.0021)$ \\[2pt]
+  \addlinespace
+  \multicolumn{2}{l}{\textbf{Labour}} \\
+    Annual Work Hours (per 100h) & $-0.0028$ \\
+    \multicolumn{1}{l}{} & $(0.0038)$ \\[2pt]
+    Works Overtime & $0.1473^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0497)$ \\[2pt]
+    Work Satisfaction & $-0.0368^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0114)$ \\[2pt]
+  \addlinespace
+  \multicolumn{2}{l}{\textbf{Mundlak means}} \\
+    $\bar{\text{Age}}$ & $0.0078$ \\
+    \multicolumn{1}{l}{} & $(0.0078)$ \\[2pt]
+    $\bar{\text{Education}}$ & $0.0493$ \\
+    \multicolumn{1}{l}{} & $(0.0661)$ \\[2pt]
+    $\overline{\text{HH Income}}^\dagger$ & $0.0514$ \\
+    \multicolumn{1}{l}{} & $(0.0830)$ \\[2pt]
+    $\bar{\text{Has Children}}$ & $-0.1004$ \\
+    \multicolumn{1}{l}{} & $(0.0898)$ \\[2pt]
+    $\overline{\text{Living Space}}$ & $0.0054^{**}$ \\
+    \multicolumn{1}{l}{} & $(0.0022)$ \\[2pt]
+    $\overline{\text{Work Hours}}$ & $0.0053$ \\
+    \multicolumn{1}{l}{} & $(0.0043)$ \\[2pt]
+    $\bar{\text{Overtime}}$ & $0.1282^{**}$ \\
+    \multicolumn{1}{l}{} & $(0.0608)$ \\[2pt]
+    $\overline{\text{Work Satisfaction}}$ & $-0.0235^{*}$ \\
+    \multicolumn{1}{l}{} & $(0.0136)$ \\[2pt]
+  \midrule
+  Sector FE & No \\
+  \midrule
+  $N$ & 11,973 \\
+  McFadden $R^2$ & 0.0401 \\
+  Log-Likelihood & -7523.1 \\
+  \bottomrule
+\end{tabular}
+\smallskip
+\parbox{\linewidth}{
+\footnotesize Cluster-robust standard errors (by individual) in parentheses. *** $p<0.01$, ** $p<0.05$, * $p<0.1$. Constant included but not reported. \\
+\footnotesize $^\dagger$ Variable entered as natural logarithm. \\
+\footnotesize Mundlak means are individual-specific time averages of the time-varying regressors. \\
+\footnotesize Sector fixed effects: NACE sectors 1--15 (reference: Agriculture).
+}
+\end{table}

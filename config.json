@@ -77,6 +77,22 @@
         }
       ],
       "compute": "hlf0019_h / d11106"
+    },
+    {
+      "name": "sector",
+      "label": "Industry Sector",
+      "scale": "1--15",
+      "source_vars": [
+        {
+          "name": "pgnace",
+          "dataset": "pgen"
+        },
+        {
+          "name": "pgnace2",
+          "dataset": "pgen"
+        }
+      ],
+      "compute": "nace_sectors mapping in transformers.compute_sector()"
     }
   ],
   "nace_sectors": [

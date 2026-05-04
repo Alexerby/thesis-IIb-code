@@ -1,0 +1,77 @@
+\begin{landscape}
+\begin{table}[htbp]
+\renewcommand{\arraystretch}{1.1}
+\footnotesize
+\centering
+\caption{Willingness to Work from Home: Pooled and Correlated Random Effects Models}
+\label{tab:binary_choice}
+\begin{tabular}{lcccccc}
+\toprule
+  & \multicolumn{2}{c}{\textbf{Logit}} & \multicolumn{2}{c}{\textbf{Probit}} & \multicolumn{2}{c}{\textbf{CRE Probit}} \\
+  \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+  & (1) & (2) & (3) & (4) & (5) & (6) \\
+\midrule
+  \addlinespace
+  \multicolumn{7}{l}{\textbf{Demographics}} \\
+    Age & $-0.0100^{***}$ & $-0.0093^{***}$ & $-0.0061^{***}$ & $-0.0056^{***}$ & $-0.0138^{*}$ & $-0.0107$ \\
+    \multicolumn{1}{l}{} & $(0.0021)$ & $(0.0022)$ & $(0.0013)$ & $(0.0013)$ & $(0.0077)$ & $(0.0078)$ \\[2pt]
+    Female & $0.0527$ & $0.0660$ & $0.0327$ & $0.0412$ & $0.0369$ & $0.0459$ \\
+    \multicolumn{1}{l}{} & $(0.0436)$ & $(0.0464)$ & $(0.0266)$ & $(0.0283)$ & $(0.0308)$ & $(0.0327)$ \\[2pt]
+    Direct Migr. Background & $-0.5244^{***}$ & $-0.5383^{***}$ & $-0.3257^{***}$ & $-0.3344^{***}$ & $-0.3187^{***}$ & $-0.3279^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0676)$ & $(0.0702)$ & $(0.0421)$ & $(0.0436)$ & $(0.0483)$ & $(0.0496)$ \\[2pt]
+    Indirect Migr. Background & $0.0168$ & $0.0101$ & $0.0076$ & $0.0044$ & $0.0101$ & $0.0067$ \\
+    \multicolumn{1}{l}{} & $(0.0972)$ & $(0.1002)$ & $(0.0591)$ & $(0.0609)$ & $(0.0705)$ & $(0.0726)$ \\[2pt]
+  \addlinespace
+  \multicolumn{7}{l}{\textbf{Socioeconomic}} \\
+    Education (ISCED-97) & $0.1368^{***}$ & $0.1154^{***}$ & $0.0837^{***}$ & $0.0706^{***}$ & $0.0329$ & $-0.0061$ \\
+    \multicolumn{1}{l}{} & $(0.0147)$ & $(0.0156)$ & $(0.0090)$ & $(0.0095)$ & $(0.0653)$ & $(0.0632)$ \\[2pt]
+    HH Post-Gov. Income$^\dagger$ & $0.3283^{***}$ & $0.2993^{***}$ & $0.1974^{***}$ & $0.1799^{***}$ & $0.1483^{*}$ & $0.1284$ \\
+    \multicolumn{1}{l}{} & $(0.0401)$ & $(0.0415)$ & $(0.0243)$ & $(0.0251)$ & $(0.0781)$ & $(0.0807)$ \\[2pt]
+    Has Children in HH & $0.0221$ & $0.0525$ & $0.0106$ & $0.0287$ & $0.1104$ & $0.1026$ \\
+    \multicolumn{1}{l}{} & $(0.0472)$ & $(0.0484)$ & $(0.0286)$ & $(0.0293)$ & $(0.0833)$ & $(0.0861)$ \\[2pt]
+    Living Space (sqm/person) & $0.0072^{***}$ & $0.0072^{***}$ & $0.0041^{***}$ & $0.0041^{***}$ & $-0.0009$ & $-0.0007$ \\
+    \multicolumn{1}{l}{} & $(0.0012)$ & $(0.0012)$ & $(0.0007)$ & $(0.0007)$ & $(0.0021)$ & $(0.0021)$ \\[2pt]
+  \addlinespace
+  \multicolumn{7}{l}{\textbf{Labour}} \\
+    Annual Work Hours (per 100h) & $0.0035$ & $0.0066^{**}$ & $0.0022$ & $0.0042^{**}$ & $-0.0028$ & $-0.0020$ \\
+    \multicolumn{1}{l}{} & $(0.0030)$ & $(0.0031)$ & $(0.0018)$ & $(0.0019)$ & $(0.0038)$ & $(0.0039)$ \\[2pt]
+    Works Overtime & $0.4114^{***}$ & $0.4198^{***}$ & $0.2525^{***}$ & $0.2569^{***}$ & $0.1473^{***}$ & $0.1580^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0463)$ & $(0.0477)$ & $(0.0286)$ & $(0.0295)$ & $(0.0497)$ & $(0.0510)$ \\[2pt]
+    Work Satisfaction & $-0.0929^{***}$ & $-0.0878^{***}$ & $-0.0566^{***}$ & $-0.0535^{***}$ & $-0.0368^{***}$ & $-0.0360^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0102)$ & $(0.0104)$ & $(0.0061)$ & $(0.0063)$ & $(0.0114)$ & $(0.0119)$ \\[2pt]
+  \addlinespace
+  \multicolumn{7}{l}{\textbf{Mundlak means}} \\
+    $\bar{\text{Age}}$ & --- & --- & --- & --- & $0.0078$ & $0.0051$ \\
+    \multicolumn{1}{l}{} &  &  &  &  & $(0.0078)$ & $(0.0080)$ \\[2pt]
+    $\bar{\text{Education}}$ & --- & --- & --- & --- & $0.0493$ & $0.0754$ \\
+    \multicolumn{1}{l}{} &  &  &  &  & $(0.0661)$ & $(0.0642)$ \\[2pt]
+    $\overline{\text{HH Income}}^\dagger$ & --- & --- & --- & --- & $0.0514$ & $0.0538$ \\
+    \multicolumn{1}{l}{} &  &  &  &  & $(0.0830)$ & $(0.0857)$ \\[2pt]
+    $\bar{\text{Has Children}}$ & --- & --- & --- & --- & $-0.1004$ & $-0.0728$ \\
+    \multicolumn{1}{l}{} &  &  &  &  & $(0.0898)$ & $(0.0928)$ \\[2pt]
+    $\overline{\text{Living Space}}$ & --- & --- & --- & --- & $0.0054^{**}$ & $0.0051^{**}$ \\
+    \multicolumn{1}{l}{} &  &  &  &  & $(0.0022)$ & $(0.0023)$ \\[2pt]
+    $\overline{\text{Work Hours}}$ & --- & --- & --- & --- & $0.0053$ & $0.0067$ \\
+    \multicolumn{1}{l}{} &  &  &  &  & $(0.0043)$ & $(0.0045)$ \\[2pt]
+    $\bar{\text{Overtime}}$ & --- & --- & --- & --- & $0.1282^{**}$ & $0.1205^{*}$ \\
+    \multicolumn{1}{l}{} &  &  &  &  & $(0.0608)$ & $(0.0623)$ \\[2pt]
+    $\overline{\text{Work Satisfaction}}$ & --- & --- & --- & --- & $-0.0235^{*}$ & $-0.0205$ \\
+    \multicolumn{1}{l}{} &  &  &  &  & $(0.0136)$ & $(0.0141)$ \\[2pt]
+  \midrule
+  Sector FE & No & Yes & No & Yes & No & Yes \\
+  \midrule
+  $N$ & 11,973 & 11,520 & 11,973 & 11,520 & 11,973 & 11,520 \\
+  McFadden $R^2$ & 0.0393 & 0.0461 & 0.0390 & 0.0458 & 0.0401 & 0.0468 \\
+  Log-Likelihood & -7529.6 & -7195.4 & -7531.8 & -7197.7 & -7523.1 & -7190.5 \\
+  \bottomrule
+\end{tabular}
+\smallskip
+\begin{minipage}{\linewidth}
+\footnotesize
+Pooled models: heteroskedasticity-robust standard errors in parentheses. CRE Probit: cluster-robust SEs by individual. *** $p<0.01$, ** $p<0.05$, * $p<0.1$. Constant included but not reported.\par
+$^\dagger$ Variable entered as natural logarithm.\par
+CRE Probit includes individual time-means of time-varying regressors (Mundlak correction).\par
+Sector fixed effects: NACE sectors 1--15 (reference: Agriculture).
+\end{minipage}
+\end{table}
+\end{landscape}

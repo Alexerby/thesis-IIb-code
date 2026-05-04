@@ -115,13 +115,13 @@ def compute_sector(df: pd.DataFrame, config: dict) -> pd.DataFrame:
             rev2_map[code] = s["id"]
 
     sector = pd.Series(pd.NA, index=df.index, dtype="Int64")
-    if "p_nace" in df.columns:
-        sector = sector.fillna(df["p_nace"].map(rev1_map))
-    if "p_nace2" in df.columns:
-        sector = sector.fillna(df["p_nace2"].map(rev2_map))
+    if "pgnace" in df.columns:
+        sector = sector.fillna(df["pgnace"].map(rev1_map))
+    if "pgnace2" in df.columns:
+        sector = sector.fillna(df["pgnace2"].map(rev2_map))
 
     df["sector"] = sector
-    df = df.drop(columns=[c for c in ["p_nace", "p_nace2"] if c in df.columns])
+    df = df.drop(columns=[c for c in ["pgnace", "pgnace2"] if c in df.columns])
     print(f"  {sector.notna().sum():,} non-null values across {sector.nunique()} sectors")
     return df
 
