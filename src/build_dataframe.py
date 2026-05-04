@@ -11,7 +11,7 @@ in extract.py, not here. Re-run extract.py when you add new harmonized variables
 
 from src.data.io import load_config, load_parquet_datasets, save_master
 from src.data.transformers import merge_datasets, merge_household_data, compute_age, compute_sector, compute_sqm_per_head, recode_variables
-from src.data.filters import filter_study_years
+from src.data.filters import filter_fulltime_employees, filter_study_years
 from src.data.extract import ensure_datasets
 
 # Value remappings applied after merging. {column: {old: new}}
@@ -53,6 +53,7 @@ def main() -> None:
         .pipe(compute_age)
         .pipe(compute_sector, config=config)
         .pipe(recode_variables, recodes=RECODES)
+        .pipe(filter_fulltime_employees)
         .pipe(filter_study_years, config=config)
         .pipe(save_master, config=config)
     )

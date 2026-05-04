@@ -1,0 +1,58 @@
+\begin{landscape}
+\begin{table}[htbp]
+\renewcommand{\arraystretch}{1.05}
+\footnotesize
+\centering
+\caption{Willingness to Work from Home: Pooled and Correlated Random Effects Models}
+\label{tab:preference_stage}
+\begin{tabular*}{\linewidth}{ @{\extracolsep{\fill}} @{}lcccccc@{} @{} }
+\toprule
+  & \multicolumn{2}{c}{\textbf{Logit}} & \multicolumn{2}{c}{\textbf{Probit}} & \multicolumn{2}{c}{\textbf{CRE Probit}} \\
+  \cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7}
+  & (1) & (2) & (3) & (4) & (5) & (6) \\
+\midrule
+  \multicolumn{7}{@{}l}{\textbf{Demographic Characteristics}} \\
+    Age & $-0.0021^{***}$ & $-0.0019^{***}$ & $-0.0021^{***}$ & $-0.0019^{***}$ & $-0.0031$ & $-0.0030$ \\
+    \multicolumn{1}{l}{} & $(0.0007)$ & $(0.0007)$ & $(0.0006)$ & $(0.0007)$ & $(0.0034)$ & $(0.0034)$ \\
+    Female & $0.0300^{**}$ & $0.0287^{**}$ & $0.0304^{**}$ & $0.0292^{**}$ & $0.0304^{**}$ & $0.0293^{**}$ \\
+    \multicolumn{1}{l}{} & $(0.0134)$ & $(0.0138)$ & $(0.0134)$ & $(0.0138)$ & $(0.0135)$ & $(0.0139)$ \\
+    Direct Migr. Background & $-0.1374^{***}$ & $-0.1328^{***}$ & $-0.1414^{***}$ & $-0.1369^{***}$ & $-0.1383^{***}$ & $-0.1338^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0200)$ & $(0.0200)$ & $(0.0207)$ & $(0.0207)$ & $(0.0207)$ & $(0.0207)$ \\
+    Indirect Migr. Background & $0.0010$ & $0.0034$ & $0.0004$ & $0.0031$ & $0.0013$ & $0.0042$ \\
+    \multicolumn{1}{l}{} & $(0.0318)$ & $(0.0314)$ & $(0.0318)$ & $(0.0314)$ & $(0.0318)$ & $(0.0314)$ \\
+  \addlinespace[2pt]
+  \multicolumn{7}{@{}l}{\textbf{Socioeconomic Determinants}} \\
+    Education (ISCED-97) & $0.0322^{***}$ & $0.0283^{***}$ & $0.0325^{***}$ & $0.0287^{***}$ & $-0.0194$ & $-0.0184$ \\
+    \multicolumn{1}{l}{} & $(0.0045)$ & $(0.0047)$ & $(0.0045)$ & $(0.0047)$ & $(0.0323)$ & $(0.0331)$ \\
+    HH Post-Gov. Income$^\dagger$ & $0.0848^{***}$ & $0.0786^{***}$ & $0.0831^{***}$ & $0.0767^{***}$ & $0.0452$ & $0.0438$ \\
+    \multicolumn{1}{l}{} & $(0.0137)$ & $(0.0139)$ & $(0.0135)$ & $(0.0137)$ & $(0.0395)$ & $(0.0396)$ \\
+    Has Children in HH & $-0.0007$ & $0.0066$ & $-0.0020$ & $0.0051$ & $0.0535$ & $0.0570$ \\
+    \multicolumn{1}{l}{} & $(0.0143)$ & $(0.0144)$ & $(0.0142)$ & $(0.0144)$ & $(0.0398)$ & $(0.0400)$ \\
+    Living Space (sqm/person) & $0.0015^{***}$ & $0.0015^{***}$ & $0.0014^{***}$ & $0.0014^{***}$ & $-0.0004$ & $-0.0003$ \\
+    \multicolumn{1}{l}{} & $(0.0004)$ & $(0.0004)$ & $(0.0003)$ & $(0.0004)$ & $(0.0009)$ & $(0.0009)$ \\
+  \addlinespace[2pt]
+  \multicolumn{7}{@{}l}{\textbf{Labour Determinants}} \\
+    Annual Work Hours (per 100h) & $0.0008$ & $0.0011$ & $0.0009$ & $0.0012$ & $-0.0016$ & $-0.0017$ \\
+    \multicolumn{1}{l}{} & $(0.0011)$ & $(0.0011)$ & $(0.0011)$ & $(0.0011)$ & $(0.0021)$ & $(0.0020)$ \\
+    Works Overtime & $0.0983^{***}$ & $0.1029^{***}$ & $0.0994^{***}$ & $0.1039^{***}$ & $0.0232$ & $0.0262$ \\
+    \multicolumn{1}{l}{} & $(0.0138)$ & $(0.0138)$ & $(0.0142)$ & $(0.0142)$ & $(0.0248)$ & $(0.0247)$ \\
+    Work Satisfaction & $-0.0177^{***}$ & $-0.0175^{***}$ & $-0.0177^{***}$ & $-0.0176^{***}$ & $-0.0136^{**}$ & $-0.0134^{**}$ \\
+    \multicolumn{1}{l}{} & $(0.0029)$ & $(0.0029)$ & $(0.0029)$ & $(0.0029)$ & $(0.0055)$ & $(0.0055)$ \\
+  \addlinespace[2pt]
+  \midrule
+  Sector FE & No & Yes & No & Yes & No & Yes \\
+  \midrule
+  $N$ (all models) & 7,539 &  &  &  &  &  \\
+  McFadden $R^2$ & 0.0457 & 0.0541 & 0.0453 & 0.0538 & 0.0470 & 0.0554 \\
+  Log-Likelihood & -4611.0 & -4570.3 & -4613.0 & -4572.2 & -4604.8 & -4564.1 \\
+  Mundlak means ($p$) & --- & --- & --- & --- & $0.001$ & $0.001$ \\
+  \bottomrule
+  \vspace{1.5pt}
+\end{tabular*}
+\smallskip
+\begin{minipage}{\linewidth}
+\footnotesize
+\textbf{Note:} Average marginal effects (AME) reported. Cluster-robust delta-method standard errors in parentheses, clustered at the individual level. *** $p<0.01$, ** $p<0.05$, * $p<0.1$. $^\dagger$ Variable entered as natural logarithm. CRE Probit includes individual time-means of time-varying regressors (Mundlak correction). Sector fixed effects: NACE sectors 1--15 (reference: Agriculture).
+\end{minipage}
+\end{table}
+\end{landscape}

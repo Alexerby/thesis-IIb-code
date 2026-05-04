@@ -239,6 +239,13 @@
         "type": "categorical"
       },
       {
+        "name": "pgemplst",
+        "dataset": "pgen",
+        "label": "Employment Status",
+        "scale": "1=Full-time, 2=Part-time, 3=Vocational, 4=Irregular, 5=Not employed",
+        "type": "categorical"
+      },
+      {
         "name": "e11101",
         "dataset": "pequiv",
         "label": "Annual work hrs",
@@ -256,7 +263,7 @@
         "label": "Industry Sector",
         "scale": "1--15",
         "type": "categorical",
-        "note": "Derived from p_nace (NACE Rev.1) and p_nace2 (NACE Rev.2) via nace_sectors mapping. See compute_sector() in transformers.py."
+        "note": "Derived from \\texttt{p_nace} (NACE Rev.1) and \\texttt{p_nace2} (NACE Rev.2)."
       }
     ]
   }

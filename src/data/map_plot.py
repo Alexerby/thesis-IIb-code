@@ -1,7 +1,6 @@
 """
-Generates an APA-style map plot comparing remote work density
-between Pre-COVID and Post-COVID periods.
-Calculation: 1 / (1+2) - Share of 'Yes' among remote-capable jobs.
+Generates a choropleth map of willingness-to-WFH share by German federal state
+for the study period (2009–2014), restricted to workers for whom WFH is possible.
 """
 
 import json
@@ -109,8 +108,9 @@ def get_period_stats(
         where ``treatment_var`` holds the percentage of "Yes" answers among
         remote-capable respondents in each state.
     """
-    period_df = df[df["syear"].isin(years)].copy()
-    capable_df = period_df[period_df[treatment_var].isin([1, 2])]
+    # plb0097 is recoded to {0=No, 1=Yes, 3=Not possible}; exclude 3 from denominator.
+    period_df  = df[df["syear"].isin(years)].copy()
+    capable_df = period_df[period_df[treatment_var].isin([0, 1])]
     stats = (
         capable_df.groupby(state_var)[treatment_var]
         .apply(lambda x: (x == 1).mean() * 100)

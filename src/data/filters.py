@@ -1,6 +1,17 @@
 import pandas as pd
 
 
+def filter_fulltime_employees(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Keep only full-time employed individuals (pgemplst == 1).
+    """
+    print("\nFiltering to full-time employees (pgemplst == 1) ...")
+    initial_rows = len(df)
+    df = df[df["pgemplst"] == 1]
+    print(f"  Removed {initial_rows - len(df):,} rows, {len(df):,} remaining")
+    return df
+
+
 def filter_study_years(df: pd.DataFrame, config: dict) -> pd.DataFrame:
     """
     Keep only rows whose survey year falls within the configured study period.
