@@ -1,0 +1,29 @@
+\begin{table}[htbp]
+\renewcommand{\arraystretch}{1.3}
+\centering
+\caption{Summary of Model Specifications and Sampling Logic}
+\label{tab:model_specifications}
+\small
+\begin{tabular*}{\linewidth}{ @{\extracolsep{\fill}} @{}llcp{7.5cm}@{} }
+\toprule
+Model ID & Estimator & Sector FE & Functional Form (Latent Variable $y_{it}^*$) \\
+\midrule
+(1) & Logit  & No  & $\mathbf{x}_{it}^{\top}\beta + \epsilon_{it}$ \\
+(2) & Logit  & Yes & $\mathbf{x}_{it}^{\top}\beta + \gamma_s + \epsilon_{it}$ \\
+(3) & Probit & No  & $\mathbf{x}_{it}^{\top}\beta + \epsilon_{it}$ \\
+(4) & Probit & Yes & $\mathbf{x}_{it}^{\top}\beta + \gamma_s + \epsilon_{it}$ \\
+(5) & CRE Probit & No  & $\mathbf{x}_{it}^{\top}\beta + \bar{\mathbf{x}}_i^{\top}\pi + \epsilon_{it}$ \\
+(6) & CRE Probit & Yes & $\mathbf{x}_{it}^{\top}\beta + \bar{\mathbf{x}}_i^{\top}\pi + \gamma_s + \epsilon_{it}$ \\
+\midrule
+\multicolumn{4}{@{}l}{\textbf{Application to Research Questions}} \\
+\textbf{Stage 1 (RQ1)} & \multicolumn{3}{p{11.5cm}@{}}{Outcome: \textit{Preference} ($y_{it}=1$ if wants WFH). Sample: Full-time employees, excluding those reporting structural impossibility.} \\
+\textbf{Stage 2 (RQ2)} & \multicolumn{3}{p{11.5cm}@{}}{Outcome: \textit{Realization} ($y_{it}=1$ if actually WFH). Sample: Full-time employees who stated a positive preference in Stage 1 ($y_{it}^{RQ1}=1$).} \\
+\bottomrule
+\vspace{1.5pt}
+\end{tabular*}
+\smallskip
+\begin{minipage}{\linewidth}
+\small
+\textbf{Note:} $\mathbf{x}_{it}$ is the vector of all control variables. $\bar{\mathbf{x}}_i$ denotes individual time-means of time-varying variables (Mundlak correction), recomputed for each specific subsample. $\gamma_s$ represents sector fixed effects (NACE 1--15).
+\end{minipage}
+\end{table}

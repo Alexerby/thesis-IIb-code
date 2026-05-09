@@ -87,7 +87,7 @@ def build_main_table(
         r"\centering",
         rf"\caption{{Descriptive Statistics: Preference and Realization Samples ({period_label})}}",
         r"\label{tab:descriptives_main}",
-        r"\footnotesize",
+        r"\scriptsize",
         rf"\begin{{tabular*}}{{\linewidth}}{{ @{{\extracolsep{{\fill}}}} {col_spec} @{{}} }}",
         r"\toprule",
         r" & & & \multicolumn{2}{c}{Preference Stage} & \multicolumn{2}{c}{Realization Stage} \\",
@@ -339,12 +339,15 @@ def _add_derived_cols(df):
     df["log_income"]       = np.log(df["i11102"].clip(lower=1))
     df["migback_direct"]   = (df["migback"] == 2).where(df["migback"].notna()).astype("float")
     df["migback_indirect"] = (df["migback"] == 3).where(df["migback"].notna()).astype("float")
+    # Partner in HH: values 1 (spouse/registered) and 2 (partner) are certain.
+    # 3 (probably spouse) and 4 (probably partner) are also included.
+    df["has_partner"]      = df["partner"].isin([1, 2, 3, 4]).astype("float").where(df["partner"].notna())
     return df
 
 
 _MODEL_COLS_BASE = [
     "pid", "syear",
-    "age", "sex", "migback_direct", "migback_indirect",
+    "age", "sex", "migback_direct", "migback_indirect", "has_partner",
     "pgisced97", "log_income", "has_children", "sqm_per_head",
     "work_hrs_100", "plb0193_h", "plh0173", "sector",
 ]

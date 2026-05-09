@@ -184,6 +184,13 @@
         "type": "categorical"
       },
       {
+        "name": "partner",
+        "dataset": "ppathl",
+        "label": "Status Of Partnership",
+        "scale": "1--5",
+        "type": "categorical"
+      },
+      {
         "name": "migback",
         "dataset": "ppathl",
         "label": "Migr. Background",

@@ -13,7 +13,7 @@ import seaborn as sns
 from src.data.utils import load_master
 
 CONTROLS = [
-    "age", "sex", "migback_direct", "migback_indirect",
+    "age", "sex", "migback_direct", "migback_indirect", "has_partner",
     "pgisced97", "log_income", "has_children", "sqm_per_head",
     "work_hrs_100", "plb0193_h", "plh0173",
 ]
@@ -21,7 +21,7 @@ CONTROLS = [
 # Time-varying only — sex and migback are constant within person so X_{i·} = X_{it},
 # making them uninformative in the Mundlak auxiliary regression α_i = X_{i·}π + w_i.
 TIME_VARYING = [
-    "age", "pgisced97", "log_income", "has_children",
+    "age", "has_partner", "pgisced97", "log_income", "has_children",
     "sqm_per_head", "work_hrs_100", "plb0193_h", "plh0173",
 ]
 
@@ -31,6 +31,7 @@ LABELS: dict[str, str] = {
     "sex":                 "Female",
     "migback_direct":      "Direct Migr. Background",
     "migback_indirect":    "Indirect Migr. Background",
+    "has_partner":         "Has Partner in HH",
     "pgisced97":           "Education (ISCED-97)",
     "log_income":          r"HH Post-Gov. Income$^\dagger$",
     "has_children":        "Has Children in HH",
@@ -40,6 +41,7 @@ LABELS: dict[str, str] = {
     "plh0173":             "Work Satisfaction",
     # Mundlak means
     "age_mean":            r"$\bar{\text{Age}}$",
+    "has_partner_mean":    r"$\bar{\text{Partner Status}}$",
     "pgisced97_mean":      r"$\bar{\text{Education}}$",
     "log_income_mean":     r"$\overline{\text{HH Income}}^\dagger$",
     "has_children_mean":   r"$\bar{\text{Has Children}}$",
@@ -50,7 +52,7 @@ LABELS: dict[str, str] = {
 }
 
 GROUPS = [
-    ("Demographic Characteristics", ["age", "sex", "migback_direct", "migback_indirect"]),
+    ("Demographic Characteristics", ["age", "sex", "migback_direct", "migback_indirect", "has_partner"]),
     ("Socioeconomic Determinants",  ["pgisced97", "log_income", "has_children", "sqm_per_head"]),
     ("Labour Determinants",         ["work_hrs_100", "plb0193_h", "plh0173"]),
 ]
@@ -60,6 +62,7 @@ PLOT_LABELS = {
     "sex":              "Female",
     "migback_direct":   "Direct Migr. Background",
     "migback_indirect": "Indirect Migr. Background",
+    "has_partner":      "Has Partner in HH",
     "pgisced97":        "Education (ISCED-97)",
     "log_income":       "HH Post-Gov. Income (log)",
     "has_children":     "Has Children in HH",
@@ -78,6 +81,7 @@ def prep_raw() -> pd.DataFrame:
     df["log_income"]       = np.log(df["i11102"].clip(lower=1))
     df["migback_direct"]   = (df["migback"] == 2).where(df["migback"].notna()).astype("float")
     df["migback_indirect"] = (df["migback"] == 3).where(df["migback"].notna()).astype("float")
+    df["has_partner"]      = df["partner"].isin([1, 2, 3, 4]).astype("float").where(df["partner"].notna())
     df["sector"]           = df["sector"].astype("float")
     return df
 
@@ -152,6 +156,8 @@ def _mundlak_wald_p(res) -> str:
     for row_i, col_i in enumerate(idx):
         r[row_i, col_i] = 1.0
     p = float(res.wald_test(r, use_f=False, scalar=False).pvalue)
+    if p < 0.001:
+        return r"$< 0.001$"
     return f"${p:.3f}$"
 
 
@@ -173,7 +179,7 @@ def save_latex_table(models: list, path: str, caption: str, label: str) -> None:
         r"\begin{landscape}",
         r"\begin{table}[htbp]",
         r"\renewcommand{\arraystretch}{1.05}",
-        r"\footnotesize",
+        r"\scriptsize",
         r"\centering",
         rf"\caption{{{caption}}}",
         rf"\label{{{label}}}",

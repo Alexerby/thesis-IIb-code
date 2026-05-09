@@ -32,10 +32,10 @@ $$
 where $X_{i\cdot} = T^{-1}\sum_{t=1}^T X_{it}$ is the vector of individual time-means, $\pi$ is the vector of projection coefficients, and $w_i$ is the projection residual. The projection coefficient is defined as the population OLS minimiser:
 
 $$
-\pi \equiv \bigl[E(X_{i\cdot}' X_{i\cdot})\bigr]^{-1} E(X_{i\cdot}' \alpha_i)
+\pi \equiv \bigl[E(X_{i\cdot}^{\top} X_{i\cdot})\bigr]^{-1} E(X_{i\cdot}^{\top} \alpha_i)
 $$
 
-By the normal equations of the linear projection, $E[X_{i\cdot}' w_i] = 0$ holds by construction — no distributional assumption on $\alpha_i$ is required. Mundlak (p. 72) notes that $\pi = 0$ if and only if the effects are uncorrelated with the regressors, i.e. the RE assumption holds.
+By the normal equations of the linear projection, $E[X_{i\cdot}^{\top} w_i] = 0$ holds by construction — no distributional assumption on $\alpha_i$ is required. Mundlak (p. 72) notes that $\pi = 0$ if and only if the effects are uncorrelated with the regressors, i.e. the RE assumption holds.
 
 ---
 
