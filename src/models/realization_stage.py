@@ -17,16 +17,17 @@ import statsmodels.formula.api as smf
 
 from src.models.binary_choice_common import (
     CONTROLS, TIME_VARYING,
-    prep_raw, augment, fit_pooled, fit_cre,
+    prep_raw, augment, fit_pooled, fit_cre, fit_fe,
     save_latex_table,
 )
 
 # ── Sample ────────────────────────────────────────────────────────────────────
 _raw = prep_raw()
-_raw = _raw[(_raw["plb0097"] == 1) & _raw["plb0095_v1"].isin([0, 1])]
+_mask = (_raw["plb0097"] == 1) & _raw["plb0095_v1"].isin([0, 1])
+_raw  = _raw.loc[_mask].copy()
 
 _cols = ["pid", "syear", "plb0095_v1"] + CONTROLS + ["sector"]
-df    = _raw[_cols].dropna()
+df    = _raw[_cols].dropna().copy()
 print(f"RQ2 sample: N = {len(df):,}  ({df['pid'].nunique():,} individuals)")
 
 df_cre = augment(df)
@@ -48,6 +49,7 @@ MODELS: list = [
     ("(4)", "Probit",     fit_pooled(smf.probit, _base_s, df),    {"Sector FE": "Yes"}),
     ("(5)", "CRE Probit", fit_cre(_cre,   df_cre),                {"Sector FE": "No"}),
     ("(6)", "CRE Probit", fit_cre(_cre_s, df_cre),                {"Sector FE": "Yes"}),
+    ("(7)", "FE LPM",     fit_fe(df, "plb0095_v1"),               {"Sector FE": "No"}),
 ]
 
 # ── Outputs ───────────────────────────────────────────────────────────────────

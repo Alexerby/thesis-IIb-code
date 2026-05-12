@@ -1,0 +1,49 @@
+\begin{table}[htbp]
+\renewcommand{\arraystretch}{1.05}
+\small
+\centering
+\caption{Fixed Effects Linear Probability Model: Time-Varying Regressors Only (Robustness Check for CRE Probit)}
+\label{tab:fe_comparison}
+\begin{tabular*}{\linewidth}{ @{\extracolsep{\fill}} @{}lcc@{} @{} }
+\toprule
+  & \textbf{Preference (RQ1)} & \textbf{Realization (RQ2)} \\
+  & (1) & (2) \\
+\midrule
+  \multicolumn{3}{@{}l}{\textbf{Demographic Characteristics}} \\
+    Age & $-0.0044$ & $0.0207^{***}$ \\
+    \multicolumn{1}{l}{} & $(0.0033)$ & $(0.0040)$ \\
+    Has Partner in HH & $-0.0816^{**}$ & $-0.0647$ \\
+    \multicolumn{1}{l}{} & $(0.0373)$ & $(0.0479)$ \\
+  \addlinespace[2pt]
+  \multicolumn{3}{@{}l}{\textbf{Socioeconomic Determinants}} \\
+    Education (ISCED-97) & $0.0039$ & $-0.0061$ \\
+    \multicolumn{1}{l}{} & $(0.0344)$ & $(0.0625)$ \\
+    HH Post-Gov. Income$^\dagger$ & $0.0707^{*}$ & $-0.0002$ \\
+    \multicolumn{1}{l}{} & $(0.0386)$ & $(0.0518)$ \\
+    Has Children in HH & $0.0485$ & $0.0392$ \\
+    \multicolumn{1}{l}{} & $(0.0371)$ & $(0.0493)$ \\
+    Living Space (sqm/person) & $-0.0006$ & $0.0003$ \\
+    \multicolumn{1}{l}{} & $(0.0008)$ & $(0.0010)$ \\
+  \addlinespace[2pt]
+  \multicolumn{3}{@{}l}{\textbf{Labour Determinants}} \\
+    Annual Work Hours (per 100h) & $-0.0020$ & $0.0054^{**}$ \\
+    \multicolumn{1}{l}{} & $(0.0019)$ & $(0.0026)$ \\
+    Works Overtime & $0.0246$ & $0.0677^{**}$ \\
+    \multicolumn{1}{l}{} & $(0.0255)$ & $(0.0303)$ \\
+    Work Satisfaction & $-0.0136^{***}$ & $-0.0050$ \\
+    \multicolumn{1}{l}{} & $(0.0053)$ & $(0.0061)$ \\
+  \addlinespace[2pt]
+  \midrule
+  Individual FE & Yes & Yes \\
+  Sector FE     & No & No \\
+  \midrule
+  $N$ & 7,788 & 5,132 \\
+  $R^2$ (within) & 0.0102 & 0.0520 \\
+  \bottomrule
+\end{tabular*}
+\smallskip
+\begin{minipage}{\linewidth}
+\footnotesize
+\textbf{Note:} OLS coefficients from within-transformed regression (FE linear probability model). Individual fixed effects absorb all time-constant regressors; only time-varying controls are identified. Coefficients are directly interpretable as average probability changes. Cluster-robust standard errors in parentheses, clustered at the individual level. *** $p<0.01$, ** $p<0.05$, * $p<0.1$. $^\dagger$ Variable entered as natural logarithm.
+\end{minipage}
+\end{table}

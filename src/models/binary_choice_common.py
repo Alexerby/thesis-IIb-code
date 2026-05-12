@@ -126,10 +126,40 @@ def _fmt_coef(c: float, p: float) -> str:
     return f"${c:.4f}^{stars}$" if stars else f"${c:.4f}$"
 
 
+def fit_fe(data: pd.DataFrame, outcome: str) -> object:
+    """Within-estimator (FE LPM) via individual demeaning on TIME_VARYING regressors only.
+
+    Time-constant regressors (sex, migback) are absorbed by individual FEs and
+    cannot be estimated. Coefficients are directly interpretable as marginal effects.
+    """
+    cols = ["pid", outcome] + TIME_VARYING
+    df   = data[cols].dropna().copy()
+    pids = df["pid"].copy()
+    for var in [outcome] + TIME_VARYING:
+        df[var] = df[var] - df.groupby("pid")[var].transform("mean")
+    return smf.ols(f"{outcome} ~ {' + '.join(TIME_VARYING)} - 1", data=df).fit(
+        cov_type="cluster",
+        cov_kwds={"groups": pids},
+    )
+
+
 def get_ame(res, controls=None) -> pd.DataFrame:
+    """Return a summary frame with columns dy/dx, Std. Err., Pr(>|z|).
+
+    For discrete models (logit/probit) this calls get_margeff(); for OLS (FE LPM)
+    it builds the equivalent frame directly from params/bse/pvalues.
+    """
     _controls = controls if controls is not None else CONTROLS
-    frame = res.get_margeff(at="overall").summary_frame()
-    return frame[frame.index.isin(_controls)].reindex([c for c in _controls if c in frame.index])
+    if hasattr(res, "get_margeff"):
+        frame = res.get_margeff(at="overall").summary_frame()
+    else:
+        frame = pd.DataFrame({
+            "dy/dx":     res.params,
+            "Std. Err.": res.bse,
+            "Pr(>|z|)":  res.pvalues,
+        })
+    out = frame[frame.index.isin(_controls)].reindex([c for c in _controls if c in frame.index])
+    return pd.DataFrame(out)
 
 
 def var_rows(var: str, ame_frames: list, label: str) -> list[str]:
@@ -214,13 +244,22 @@ def save_latex_table(models: list, path: str, caption: str, label: str,
     for fe_key in fe_keys:
         rows.append(f"  {fe_key} & {' & '.join(m[3][fe_key] for m in models)} \\\\")
 
+    def _r2(res) -> str:
+        if hasattr(res, "prsquared"):
+            return f"{res.prsquared:.4f}"
+        return f"{res.rsquared:.4f}"  # FE LPM: within-R²
+
+    def _llf(res) -> str:
+        # OLS llf is not comparable to discrete-model llf — omit for FE LPM
+        return f"{res.llf:.1f}" if hasattr(res, "prsquared") else "---"
+
     rows.append(r"  \midrule")
     n_obs = int(models[0][2].nobs)
     rows += [
         r"  $N$ (all models) & " + f"{n_obs:,}" + " & " * (n_models - 1) + r" \\",
-        r"  McFadden $R^2$ & "       + " & ".join(f"{m[2].prsquared:.4f}" for m in models) + r" \\",
-        r"  Log-Likelihood & "       + " & ".join(f"{m[2].llf:.1f}"       for m in models) + r" \\",
-        r"  Mundlak means ($p$) & "  + " & ".join(_mundlak_wald_p(m[2])   for m in models) + r" \\",
+        r"  McFadden $R^2$ / Within $R^2$ & " + " & ".join(_r2(m[2])          for m in models) + r" \\",
+        r"  Log-Likelihood & "                 + " & ".join(_llf(m[2])         for m in models) + r" \\",
+        r"  Mundlak means ($p$) & "            + " & ".join(_mundlak_wald_p(m[2]) for m in models) + r" \\",
         r"  \bottomrule",
         r"  \vspace{1.5pt}",
         r"\end{tabular*}",
