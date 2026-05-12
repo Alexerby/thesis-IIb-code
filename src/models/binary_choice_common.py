@@ -20,7 +20,7 @@ CONTROLS = [
 
 # Time-varying only — sex and migback are constant within person so X_{i·} = X_{it},
 # making them uninformative in the Mundlak auxiliary regression α_i = X_{i·}π + w_i.
-TIME_VARYING = [
+TIME_VARYING = [ # To not compute the means for time-constant characteristics
     "age", "has_partner", "pgisced97", "log_income", "has_children",
     "sqm_per_head", "work_hrs_100", "plb0193_h", "plh0173",
 ]
@@ -126,9 +126,10 @@ def _fmt_coef(c: float, p: float) -> str:
     return f"${c:.4f}^{stars}$" if stars else f"${c:.4f}$"
 
 
-def get_ame(res) -> pd.DataFrame:
+def get_ame(res, controls=None) -> pd.DataFrame:
+    _controls = controls if controls is not None else CONTROLS
     frame = res.get_margeff(at="overall").summary_frame()
-    return frame[frame.index.isin(CONTROLS)].reindex([c for c in CONTROLS if c in frame.index])
+    return frame[frame.index.isin(_controls)].reindex([c for c in _controls if c in frame.index])
 
 
 def var_rows(var: str, ame_frames: list, label: str) -> list[str]:
@@ -161,7 +162,12 @@ def _mundlak_wald_p(res) -> str:
     return f"${p:.3f}$"
 
 
-def save_latex_table(models: list, path: str, caption: str, label: str) -> None:
+def save_latex_table(models: list, path: str, caption: str, label: str,
+                     groups=None, labels=None, controls=None) -> None:
+    _groups   = groups   if groups   is not None else GROUPS
+    _labels   = labels   if labels   is not None else LABELS
+    _controls = controls if controls is not None else CONTROLS
+
     n_models  = len(models)
     col_spec  = "@{}l" + "c" * n_models + "@{}"
     col_types = [m[1] for m in models]
@@ -191,18 +197,17 @@ def save_latex_table(models: list, path: str, caption: str, label: str) -> None:
         r"\midrule",
     ]
 
-    ame_frames = [get_ame(m[2]) for m in models]
+    ame_frames = [get_ame(m[2], controls=_controls) for m in models]
 
-    for i, (group_label, vars_in_group) in enumerate(GROUPS):
+    for group_label, vars_in_group in _groups:
         present = [v for v in vars_in_group if any(v in ame.index for ame in ame_frames)]
         if not present:
             continue
-        
-        # Add bold subheader for the group
+
         rows.append(rf"  \multicolumn{{{1 + n_models}}}{{@{{}}l}}{{\textbf{{{group_label}}}}} \\")
-        
+
         for var in present:
-            rows += var_rows(var, ame_frames, LABELS.get(var, var))
+            rows += var_rows(var, ame_frames, _labels.get(var, var))
         rows.append(r"  \addlinespace[2pt]")
 
     rows.append(r"  \midrule")
